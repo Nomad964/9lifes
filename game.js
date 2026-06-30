@@ -332,42 +332,72 @@ function startBudget(){
   renderPuzzle(); show('screen-puzzle'); startPuzzleTimer();
 }
 
-/* ===== Головоломка №2: «Переговоры» (push-your-luck) ===== */
+/* ===== Головоломка №2: «Переговоры» (тактика: куш vs терпение) ===== */
 function startNego(){
-  state.nego={round:0, pot:20, patience:3+Math.floor(Math.random()*4)};
-  renderNego(); show('screen-puzzle');
+  state.nego={ profit:0, patience:80, rounds:0, maxRounds:6, timeLeft:40, reveal:false, lastTxt:'' };
+  renderNego(); show('screen-puzzle'); startNegoTimer();
+}
+function startNegoTimer(){
+  clearInterval(pzTimer);
+  pzTimer=setInterval(()=>{
+    if(!state.nego){ clearInterval(pzTimer); return; }
+    state.nego.timeLeft--;
+    const el=$('pz-timer'); if(el){ el.textContent=state.nego.timeLeft+' с'; if(state.nego.timeLeft<=8) el.classList.add('low'); }
+    if(state.nego.timeLeft<=8 && state.nego.timeLeft>0) SFX.tick();
+    if(state.nego.timeLeft<=0){ clearInterval(pzTimer); negoResult('time'); }
+  },1000);
 }
 function negoMood(){
-  const left=state.nego.patience-state.nego.round;
-  if(left>=3) return 'партнёр доволен — можно дожимать';
-  if(left===2) return 'партнёр спокоен, но следит за тоном';
-  if(left===1) return 'партнёр напрягся — дальше рискованно';
-  return 'партнёр на пределе — пора закрывать';
+  const p=state.nego.patience;
+  if(state.nego.reveal) return `терпение партнёра: ${Math.round(p)} / 100`;
+  if(p>=70) return 'партнёр расположен — можно дожимать';
+  if(p>=45) return 'партнёр спокоен, но считает каждый шаг';
+  if(p>=22) return 'партнёр напрягся — на грани';
+  return 'партнёр вот-вот встанет и уйдёт';
 }
-function renderNego(){
-  const n=state.nego;
-  $('screen-puzzle').innerHTML=`<div class="pz-wrap">
-      <div class="end-kicker">Задача недели</div>
-      <h2>🤝 Переговоры</h2>
-      <p>Дожимай условия — каждая надбавка повышает куш, но партнёр может встать и уйти. Вовремя ударь по рукам.</p>
-      <div class="pz-budget ok">Текущий куш: ${n.pot}</div>
-      <div class="pz-hint" style="font-size:13.5px;margin:0 0 16px;">${negoMood()}</div>
-      <button class="btn" style="min-width:230px;margin-bottom:10px;" onclick="raiseNego()">📈 Поднять ставку</button>
-      <button class="btn btn-primary" style="min-width:230px;" onclick="closeNego()">🤝 Ударить по рукам</button>
-    </div>`;
-}
-function raiseNego(){
-  const n=state.nego; n.round++; SFX.step();
-  if(n.round>n.patience) return negoResult('collapse');
-  n.pot += 12 + Math.floor(Math.random()*8);
+function negoAct(type){
+  const n=state.nego; if(n.rounds>=n.maxRounds) return;
+  let txt='';
+  if(type==='raise'){ n.profit+=14+Math.floor(Math.random()*7); n.patience-=22+Math.floor(Math.random()*9); txt='📈 Поднял цену'; SFX.step(); }
+  else if(type==='concede'){ n.profit=Math.max(0,n.profit-(4+Math.floor(Math.random()*3))); n.patience=Math.min(100,n.patience+12+Math.floor(Math.random()*7)); txt='🤝 Уступил мелочь'; SFX.step(); }
+  else if(type==='push'){ if(n.patience>=35){ n.profit+=9+Math.floor(Math.random()*5); n.patience-=10+Math.floor(Math.random()*5); txt='💬 Дожал аргументом'; SFX.step(); } else { n.patience-=24; txt='💬 Передавил — партнёр оскорбился!'; SFX.bad(); } }
+  else if(type==='bluff'){ if(Math.random()<0.5){ n.profit+=22+Math.floor(Math.random()*7); txt='🎲 Блеф удался!'; SFX.good(); } else { n.patience-=34; txt='🎲 Блеф раскусили!'; SFX.bad(); } }
+  n.rounds++; n.lastTxt=txt;
+  if(n.patience<=0){ n.patience=0; return negoResult('collapse'); }
+  if(n.rounds>=n.maxRounds){ return negoResult('rounds'); }
   renderNego();
 }
+function negoHint(){ Ads.rewarded(()=>{ if(state.nego){ state.nego.reveal=true; renderNego(); } }); }
 function closeNego(){ negoResult('close'); }
+function renderNego(){
+  const n=state.nego, pw=Math.max(0,Math.min(100,n.patience));
+  $('screen-puzzle').innerHTML=`<div class="pz-wrap">
+    <div class="end-kicker">Задача недели · ход ${n.rounds}/${n.maxRounds}</div>
+    <div class="pz-timer ${n.timeLeft<=8?'low':''}" id="pz-timer">${n.timeLeft} с</div>
+    <h2>🤝 Переговоры</h2>
+    <p>Выжми из сделки максимум, не доведя партнёра до ухода.${n.lastTxt?'<br><b>'+n.lastTxt+'</b>':''}</p>
+    <div class="nego-stat">💰 Куш: <b>${n.profit}</b></div>
+    <div class="pz-hint" style="margin:4px 0 6px;">${negoMood()}</div>
+    <div class="bar" style="margin-bottom:16px;"><i style="width:${pw}%; background:linear-gradient(90deg,#b0405e,#5AA9E6); box-shadow:0 0 10px rgba(90,169,230,.5);"></i></div>
+    <button class="btn" style="min-width:250px;margin-bottom:8px;" onclick="negoAct('raise')">📈 Поднять цену<small>куш сильно↑ · терпение сильно↓</small></button>
+    <button class="btn" style="min-width:250px;margin-bottom:8px;" onclick="negoAct('push')">💬 Дожать аргументом<small>куш↑ · терпение↓ · на грани backfire</small></button>
+    <button class="btn" style="min-width:250px;margin-bottom:8px;" onclick="negoAct('concede')">🤝 Уступить мелочь<small>куш↓ · терпение↑</small></button>
+    <button class="btn" style="min-width:250px;margin-bottom:8px;" onclick="negoAct('bluff')">🎲 Блеф<small>50/50: большой куш или −терпение</small></button>
+    <button class="btn" style="min-width:250px;margin:6px 0 8px;" onclick="negoHint()">💡 Раскрыть терпение (реклама)</button>
+    <button class="btn btn-primary" style="min-width:250px;" onclick="closeNego()">✅ Ударить по рукам</button>
+  </div>`;
+}
 function negoResult(mode){
+  clearInterval(pzTimer);
   const n=state.nego; let tier,fx,msg;
   if(mode==='collapse'){ tier='Провал'; fx={cap:-6,rep:-4}; msg='Передавил — партнёр встал и ушёл. Сделка сорвана, клиент потерян.'; state.flags.dealFail=true; SFX.bad(); }
-  else if(n.round===n.patience){ tier='Блестяще'; fx={cap:10,rep:4}; msg=`Выжал максимум — ${n.pot} и крепкое рукопожатие. Партнёр уважает.`; state.flags.dealGreat=true; SFX.good(); }
-  else { tier='Норма'; const g=Math.round(n.pot/5); fx={cap:g,rep:2}; msg=`Сделка закрыта на ${n.pot}. Надёжно, без жадности.`; SFX.good(); }
+  else {
+    const p=n.profit;
+    if(p>=75){ tier='Блестяще'; fx={cap:12,rep:5}; msg=`Ты выжал ${p} и сохранил отношения — мастерская сделка.`; state.flags.dealGreat=true; SFX.good(); }
+    else if(p>=45){ tier='Норма'; fx={cap:Math.round(p/6),rep:2}; msg=`Сделка на ${p}. Крепко, по делу.`; SFX.good(); }
+    else { tier='Норма'; fx={cap:Math.round(p/7)+1,rep:1}; msg=`Сделка на ${p}. Скромно, но в плюс.`; SFX.good(); }
+    if(mode==='time') msg='Время вышло. '+msg;
+  }
   for(const k in fx) state.m[k]=clamp(state.m[k]+fx[k]);
   state.flags.puzzleLine='🤝 Переговоры — '+tier+': '+msg;
   const icon=tier==='Блестяще'?'🏆':tier==='Норма'?'👍':'⚠️';

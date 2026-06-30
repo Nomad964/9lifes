@@ -137,7 +137,7 @@
   #title-ev{font-family:'Playfair Display',serif; font-weight:800; font-size:22px; color:var(--gold); letter-spacing:.3px; margin-bottom:9px;}
   #text{font-size:15px; line-height:1.58; color:#e9e4d8;}
 
-  #choices{padding:10px 14px 16px; display:flex; flex-direction:column; gap:10px;}
+  #choices{padding:10px 14px calc(86px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:10px;}
   .choice{text-align:left; cursor:pointer; color:var(--cream); font-family:'Manrope'; font-size:14.5px; font-weight:500; border-radius:13px; padding:13px 15px; position:relative; overflow:hidden;
     border:1px solid rgba(212,162,74,.3); background:linear-gradient(180deg,rgba(212,162,74,.07),rgba(255,255,255,.02));
     backdrop-filter:blur(8px); transition:transform .14s, border-color .25s, box-shadow .3s;}
@@ -156,7 +156,7 @@
   .saved{font-size:11px; color:var(--emerald); opacity:0; transition:opacity .3s;}
 
   /* ===== END ===== */
-  #screen-end{align-items:center; text-align:center; padding:28px 18px 52px;}
+  #screen-end{align-items:center; text-align:center; padding:28px 18px calc(86px + env(safe-area-inset-bottom));}
   .end-bg{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.16; z-index:0;}
   .end-wrap{position:relative; z-index:1; width:100%; max-width:360px;}
   .end-kicker{font-family:'Oswald'; letter-spacing:3px; font-size:12px; text-transform:uppercase; color:var(--gold-soft); margin-bottom:8px;}
@@ -170,7 +170,7 @@
   .end-score{font-family:'Oswald'; letter-spacing:1px; color:var(--gold-soft); font-size:16px; margin:4px 0 14px;}
   .stat-row{font-family:'Oswald'; letter-spacing:1px; color:#cdd2df; font-size:15px; margin:16px 0 18px;}
   /* ===== PUZZLE ===== */
-  #screen-puzzle{align-items:center; text-align:center; padding:28px 18px 52px;}
+  #screen-puzzle{align-items:center; text-align:center; padding:28px 18px calc(86px + env(safe-area-inset-bottom));}
   .pz-wrap{position:relative; z-index:1; width:100%; max-width:360px; text-align:center;}
   #screen-puzzle h2{font-family:'Playfair Display',serif; font-weight:900; color:var(--gold); font-size:26px; margin-bottom:10px;}
   #screen-puzzle p{font-size:14px; line-height:1.55; color:#e7e2d6; margin-bottom:12px;}
@@ -178,6 +178,8 @@
   .pz-budget.ok{color:var(--emerald);}
   .pz-timer{font-family:'Oswald'; font-size:24px; letter-spacing:1px; color:var(--gold-soft); margin-bottom:4px;}
   .pz-timer.low{color:#e8688a;}
+  .nego-stat{font-family:'Oswald'; letter-spacing:1px; color:var(--gold-soft); font-size:19px;}
+  .btn small{display:block; font-size:10.5px; color:#cdd2df; font-weight:400; margin-top:3px; letter-spacing:0;}
   .pz-row{display:flex; justify-content:space-between; align-items:center; gap:10px; background:rgba(255,255,255,.04); border:1px solid rgba(212,162,74,.18); border-radius:12px; padding:10px 12px; margin-bottom:9px;}
   .pz-info{display:flex; align-items:center; gap:10px; text-align:left;}
   .pz-ic{font-size:23px;}
