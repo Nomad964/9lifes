@@ -218,7 +218,11 @@
     <div id="floats"></div>
     <header>
       <div class="logo">9 <b>ЖИЗНЕЙ</b></div>
-      <div class="week" id="week">Неделя 1</div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="saved" id="saved">сохр.</span>
+        <span class="week" id="week">Неделя 1</span>
+        <button class="ctrl" id="restart" title="Заново" style="font-size:18px; padding:2px 6px;">↺</button>
+      </div>
     </header>
     <div id="metrics">
       <div class="metric glass m-cap"><div class="top"><span>💰 Капитал</span><span class="val" id="v-cap">50</span></div><div class="bar"><i id="b-cap"></i></div></div>
@@ -241,11 +245,6 @@
       <div id="text">Текст…</div>
     </div>
     <div id="choices"></div>
-    <footer>
-      <button class="ctrl" id="restart">↺ Заново</button>
-      <span class="saved" id="saved">сохранено</span>
-      <span class="week" style="font-size:11px;">9 жизней</span>
-    </footer>
   </section>
 
   <!-- END -->

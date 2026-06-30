@@ -240,6 +240,7 @@ function renderEvent(){
     soundBtn.classList.remove('hidden'); soundBtn.textContent='🔊';
     soundBtn.onclick=()=>{ vid.muted=!vid.muted; soundBtn.textContent=vid.muted?'🔊':'🔇'; vid.play().catch(()=>{}); };
   }
+  $('week').textContent='Неделя '+(state.weekNum||1);
   $('title-ev').textContent=ev.title;
   $('text').innerHTML=(state.cur==='week')?weekText():(state.cur==='ch2_grisha')?ch2GrishaText():ev.text;
   const box=$('choices');box.innerHTML='';
@@ -281,12 +282,13 @@ function standings(){
   return {loyal,cold};
 }
 function score(){ return Math.round(state.m.cap+state.m.rep+state.m.mor+state.m.soul); }
+const VK_APP_LINK='https://vk.com/app54658940';
 function shareWeek(){
   const o=outcome(), sc=score();
-  const text=`Моя компания «Девять»: ${o.t} · Скор недели ${sc}/400 (💰${Math.round(state.m.cap)} ⭐${Math.round(state.m.rep)} ❤️${Math.round(state.m.mor)} 🔮${Math.round(state.m.soul)}). А каким боссом станешь ты?`;
+  const text=`Моя компания «Девять»: ${o.t} · Скор ${sc}/400 (💰${Math.round(state.m.cap)} ⭐${Math.round(state.m.rep)} ❤️${Math.round(state.m.mor)} 🔮${Math.round(state.m.soul)}). А каким боссом станешь ты? ${VK_APP_LINK}`;
   try{
-    if(window.vkBridge){ window.vkBridge.send('VKWebAppShare',{link:location.href}).catch(()=>{}); }
-    else if(navigator.share){ navigator.share({title:'9 Жизней',text,url:location.href}).catch(()=>{}); }
+    if(window.vkBridge){ window.vkBridge.send('VKWebAppShare',{link:VK_APP_LINK}).catch(()=>{}); }
+    else if(navigator.share){ navigator.share({title:'9 Жизней',text,url:VK_APP_LINK}).catch(()=>{}); }
     else { try{navigator.clipboard.writeText(text);}catch(e){} alert('Результат скопирован:\n\n'+text); }
   }catch(e){}
 }
