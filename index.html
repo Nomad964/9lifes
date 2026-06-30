@@ -156,9 +156,9 @@
   .saved{font-size:11px; color:var(--emerald); opacity:0; transition:opacity .3s;}
 
   /* ===== END ===== */
-  #screen-end{display:grid; text-align:center; padding:30px 18px; position:relative;}
+  #screen-end{align-items:center; text-align:center; padding:28px 18px 52px;}
   .end-bg{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.16; z-index:0;}
-  .end-wrap{position:relative; z-index:1; width:100%; max-width:360px; margin:auto;}
+  .end-wrap{position:relative; z-index:1; width:100%; max-width:360px;}
   .end-kicker{font-family:'Oswald'; letter-spacing:3px; font-size:12px; text-transform:uppercase; color:var(--gold-soft); margin-bottom:8px;}
   #screen-end h2{font-family:'Playfair Display',serif; font-weight:900; color:var(--gold); font-size:29px; margin-bottom:12px; letter-spacing:.5px;}
   #screen-end p{font-size:14px; line-height:1.6; color:#e7e2d6; margin-bottom:14px;}
@@ -170,8 +170,8 @@
   .end-score{font-family:'Oswald'; letter-spacing:1px; color:var(--gold-soft); font-size:16px; margin:4px 0 14px;}
   .stat-row{font-family:'Oswald'; letter-spacing:1px; color:#cdd2df; font-size:15px; margin:16px 0 18px;}
   /* ===== PUZZLE ===== */
-  #screen-puzzle{display:grid; text-align:center; padding:30px 18px; position:relative;}
-  .pz-wrap{position:relative; z-index:1; width:100%; max-width:360px; text-align:center; margin:auto;}
+  #screen-puzzle{align-items:center; text-align:center; padding:28px 18px 52px;}
+  .pz-wrap{position:relative; z-index:1; width:100%; max-width:360px; text-align:center;}
   #screen-puzzle h2{font-family:'Playfair Display',serif; font-weight:900; color:var(--gold); font-size:26px; margin-bottom:10px;}
   #screen-puzzle p{font-size:14px; line-height:1.55; color:#e7e2d6; margin-bottom:12px;}
   .pz-budget{font-family:'Oswald'; letter-spacing:1px; color:#e8688a; font-size:16px; margin:6px 0 14px;}
@@ -244,7 +244,7 @@
     <footer>
       <button class="ctrl" id="restart">↺ Заново</button>
       <span class="saved" id="saved">сохранено</span>
-      <span class="week" style="font-size:11px;">прототип · срез Главы 1</span>
+      <span class="week" style="font-size:11px;">9 жизней</span>
     </footer>
   </section>
 

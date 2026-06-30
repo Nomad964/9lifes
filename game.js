@@ -442,12 +442,11 @@ function endSlice(){
   }
   const note = more
     ? 'Твои решения уже тянут последствия в следующую неделю. Дальше — сложнее.'
-    : 'В полной игре каждое решение ведёт к одной из 5–6 разных концовок. Пока готовы 2 главы.';
+    : 'Каждое твоё решение ведёт к одной из развязок. История ещё впереди.';
   const mainBtn = more
     ? `<button class="btn btn-primary" style="min-width:240px;" onclick="nextChapter()">Глава ${wk+1} →</button>`
     : `<button class="btn btn-primary" style="min-width:240px;" onclick="hardReset()">↺ Пройти заново</button>`;
   $('screen-end').innerHTML=`
-    <video class="end-bg" playsinline muted loop autoplay src="${CLIP_DIR}vid_ev08_night.mp4?v=3"></video>
     <div class="end-wrap">
       <div class="end-kicker">Итоги недели ${wk} · что ты построил</div>
       <h2>${o.t}</h2>
