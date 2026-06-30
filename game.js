@@ -57,6 +57,10 @@ const SFX={
 };
 
 const EVENTS = {
+  company:{ loc:'КОТОПОЛИС · «ДЕВЯТЬ»', emoji:'🏙️', tag:'«Девять»', video:'vid_company.mp4', vtype:'loop',
+    title:'«Девять»',
+    text:'Маркетплейс и супер-апп Котополиса: здесь покупают всё, заказывают любой сервис и живут онлайн. Миллионы котоморфов каждый день. Это — компания, которую тебе сейчас передадут.',
+    choices:[{label:'Войти в компанию →',sub:'Барон ждёт',next:'intro'}] },
   intro:{ loc:'КАМОРКА · СТАРТОВЫЙ ОФИС', emoji:'🔑', tag:'Барон', img:'ev01_baron_keys.jpg', video:'vid_ev01_baron.mp4', vtype:'tap',
     title:'Ключи от «Девяти»',
     text:'Барон кладёт перед тобой ключ-карту и тяжело смотрит. «Я построил это с нуля. Теперь компания твоя. Не угробь то, ради чего я жил». За дверью — команда, долги и амбиции.',
@@ -164,7 +168,7 @@ const SAVE_KEY='devyat9_slice_save';
 let state=null;
 const $=id=>document.getElementById(id);
 const clamp=v=>Math.max(0,Math.min(100,v));
-function fresh(){return{cur:'intro',m:{...START},flags:{},rel:{},weekNum:1};}
+function fresh(){return{cur:'company',m:{...START},flags:{},rel:{},weekNum:1};}
 function load(){try{return JSON.parse(localStorage.getItem(SAVE_KEY));}catch(e){return null;}}
 function save(){if(state)localStorage.setItem(SAVE_KEY,JSON.stringify(state));flashSaved();}
 
