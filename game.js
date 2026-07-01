@@ -46,7 +46,14 @@ const Streak = {
 /* === Звуки === лёгкие WebAudio-тоны, без файлов. Включаются на жестах игрока. */
 const SFX={
   ctx:null, on:true,
-  _c(){ if(!this.ctx){ try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(this.ctx&&this.ctx.state==='suspended'){ this.ctx.resume(); } return this.ctx; },
+  _c(){
+    // пересоздать, если контекст закрылся (iOS убивает его после видео со звуком)
+    if(this.ctx && this.ctx.state==='closed'){ this.ctx=null; }
+    if(!this.ctx){ try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+    // на iOS после видео контекст уходит в suspended/interrupted — будим на каждом жесте
+    if(this.ctx && this.ctx.state!=='running'){ try{ this.ctx.resume(); }catch(e){} }
+    return this.ctx;
+  },
   tone(f,d,type,vol,delay){ if(!this.on)return; const c=this._c(); if(!c)return; const t=c.currentTime+(delay||0); const o=c.createOscillator(),g=c.createGain(); o.type=type||'sine'; o.frequency.value=f; g.gain.setValueAtTime(vol||0.05,t); o.connect(g); g.connect(c.destination); o.start(t); g.gain.exponentialRampToValueAtTime(0.0001,t+d); o.stop(t+d); },
   click(){ this.tone(430,0.07,'triangle',0.045); },
   tap(){ this.tone(500,0.045,'triangle',0.05); this.tone(320,0.05,'sine',0.03); },
@@ -172,7 +179,7 @@ const EVENTS = {
       {label:'Замять: «Никакой утечки не было».',sub:'Спасти лицо',fx:{rep:+5,soul:-8},rel:{sonya:-3},set:{coverUp:true},next:'ch3_bagira'} ] },
 
   ch3_bagira:{ loc:'СТЕКЛЯННАЯ ПЕРЕГОВОРКА', emoji:'🖤', tag:'Багира', img:'ch3_02_bagira.jpg', video:'vid_ch3_bagira.mp4', vtype:'tap',
-    cam:{video:'vid_cam_10.mp4', flag:'sawCam10', cap:'Камера засекла Багиру в кафе с человеком конкурента: «Их клиент будет наш. Молчи — и она в плюсе». Возможно, крот — это она. Но прямых доказательств пока нет.'},
+    cam:{video:'vid_cam_10.mp4', flag:'sawCam10', cap:'Камера засекла Багиру в кафе с человеком конкурента — доверительная беседа явно не по работе, и чужие интересы ей будто ближе твоих. Возможно, крот — это она. Но прямых доказательств пока нет.'},
     title:'Первое подозрение',
     text:'Все взгляды — на Багиру. Слишком много совпадений: доступы, связи, амбиции. Она стоит перед тобой, спокойная и дерзкая: «Думаешь, это я? Докажи».',
     choices:[
@@ -458,7 +465,8 @@ function show(id){
   if(id!=='screen-game'){ try{const v=$('scene-vid'); v.pause(); v.muted=true; v.removeAttribute('src'); v.load&&v.load();}catch(e){} }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const t=$(id); t.classList.add('active');
-  try{ t.scrollTop=0; }catch(e){}   // сброс прокрутки — иначе шапку утягивает вверх между сценами/главами
+  // сброс прокрутки после кадра — иначе шапку утягивает вверх и на iOS подмерзает скролл
+  requestAnimationFrame(()=>{ try{ t.scrollTop=0; }catch(e){} });
 }
 
 function renderMetrics(){for(const k of['cap','rep','mor','soul']){$('v-'+k).textContent=Math.round(state.m[k]);$('b-'+k).style.width=clamp(state.m[k])+'%';}}
@@ -497,7 +505,7 @@ function soulVerdict(){const s=state.m.soul;
   return'Ты балансируешь между <b>людьми и эффективностью</b>. Куда качнёшь — решат следующие недели.';}
 
 function renderEvent(){
-  try{ $('screen-game').scrollTop=0; }catch(e){}   // каждая новая сцена начинается сверху — с шапки и метрик
+  requestAnimationFrame(()=>{ try{ $('screen-game').scrollTop=0; }catch(e){} });   // каждая новая сцена — сверху, с шапки и метрик
   const ev=EVENTS[state.cur];
   const scene=$('scene'), vid=$('scene-vid'), img=$('scene-img');
   const ctls=$('scene-ctls'), pauseBtn=$('scene-pause'), soundBtn=$('scene-sound');
@@ -623,12 +631,20 @@ function standings(){
 function score(){ return Math.round(state.m.cap+state.m.rep+state.m.mor+state.m.soul); }
 const VK_APP_LINK='https://vk.com/app54658940';
 function shareWeek(){
-  const o=outcome(), sc=score();
-  const text=`Моя компания «Девять»: ${o.t} · Скор ${sc}/400 (💰${Math.round(state.m.cap)} ⭐${Math.round(state.m.rep)} ❤️${Math.round(state.m.mor)} 🔮${Math.round(state.m.soul)}). А каким боссом станешь ты? ${VK_APP_LINK}`;
+  const sc=score(), title=(state.flags.endingKey?computeEnding().t:outcome().t);
+  const text=`Моя компания «Девять» — ${title}\n`+
+    `Скор ${sc}/400\n`+
+    `💰 Капитал ${Math.round(state.m.cap)}  ⭐ Репутация ${Math.round(state.m.rep)}\n`+
+    `❤️ Мораль ${Math.round(state.m.mor)}  🔮 Душа ${Math.round(state.m.soul)}\n\n`+
+    `А каким боссом станешь ты?`;
   try{
-    if(window.vkBridge){ window.vkBridge.send('VKWebAppShare',{link:VK_APP_LINK}).catch(()=>{}); }
-    else if(navigator.share){ navigator.share({title:'9 Жизней',text,url:VK_APP_LINK}).catch(()=>{}); }
-    else { try{navigator.clipboard.writeText(text);}catch(e){} alert('Результат скопирован:\n\n'+text); }
+    if(window.vkBridge){
+      // пост на стену — показывает ЦИФРЫ; при отказе/ошибке — обычный шэр ссылки
+      window.vkBridge.send('VKWebAppShowWallPostBox',{ message:text, attachments:VK_APP_LINK })
+        .catch(()=>{ window.vkBridge.send('VKWebAppShare',{link:VK_APP_LINK}).catch(()=>{}); });
+    }
+    else if(navigator.share){ navigator.share({title:'9 Жизней',text:text+'\n'+VK_APP_LINK,url:VK_APP_LINK}).catch(()=>{}); }
+    else { try{navigator.clipboard.writeText(text+'\n'+VK_APP_LINK);}catch(e){} alert('Результат скопирован:\n\n'+text); }
   }catch(e){}
 }
 /* ===== Головоломка недели №1: «Распредели бюджет» ===== */
