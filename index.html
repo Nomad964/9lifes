@@ -30,8 +30,8 @@
     display:flex; flex-direction:column;
     background:radial-gradient(130% 90% at 50% -10%, #20243a 0%, #12131d 55%, #0c0d14 100%);
   }
-  #app::before{ /* дрейфующие световые пятна */
-    content:''; position:absolute; inset:-25%; z-index:0; pointer-events:none;
+  #app::before{ /* дрейфующие световые пятна (inset:0 — НЕ выходить за края, иначе #app скроллится и ломает прокрутку) */
+    content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
     background:
       radial-gradient(35% 30% at 25% 20%, rgba(20,155,126,.22), transparent 70%),
       radial-gradient(40% 35% at 80% 30%, rgba(212,162,74,.20), transparent 70%),

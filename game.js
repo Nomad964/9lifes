@@ -1324,10 +1324,19 @@ document.addEventListener('click',e=>{
   try{ SFX.tap(); }catch(err){}
 },true);
 
-/* Скролл-фикс: декоративный фон-слой (#app::before, inset:-25%) делал сам #app прокручиваемым
-   на ~235px. Фокус на кнопке/видео уводил #app в этот фантомный скролл → шапку утягивало,
-   вниз ехало, а вверх на iOS ЗАЛИПАЛО. Жёстко держим #app в нуле — скроллит только .screen. */
-(function(){ var a=$('app'); if(a){ a.addEventListener('scroll',function(){ if(a.scrollTop||a.scrollLeft){ a.scrollTop=0; a.scrollLeft=0; } },{passive:true}); } })();
+/* Скролл-фикс: причина была в декоративном фоне #app::before (inset:-25%) — он делал сам #app
+   прокручиваемым, туда уводило фокусом видео/кнопок → шапку утягивало и на iOS залипало.
+   Причину убрали в CSS (inset:0), поэтому агрессивный зажим #app больше не нужен (он ломал
+   скролл вниз). Оставляем только буфер границы ниже. */
+
+/* iOS-webview фикс ЗАЛИПАНИЯ скролла на границе: если контейнер стоит вплотную к верх/низ,
+   он «замерзает» и оживает только репейнтом (блокировка/разблокировка экрана). Держим его
+   на 1px от края в начале каждого касания — тогда всегда есть куда «оттолкнуться». */
+document.addEventListener('touchstart',function(e){
+  var s=e.target && e.target.closest ? e.target.closest('.screen') : null; if(!s) return;
+  var max=s.scrollHeight - s.clientHeight; if(max<=1) return;
+  if(s.scrollTop<=0) s.scrollTop=1; else if(s.scrollTop>=max) s.scrollTop=max-1;
+},{passive:true});
 
 $('btn-start').onclick=playIntro;
 $('intro-cta').onclick=startGame;
