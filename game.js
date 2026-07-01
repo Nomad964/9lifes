@@ -21,10 +21,15 @@ const Ads = {
     try{ if(window.vkBridge) window.vkBridge.send('VKWebAppShowNativeAds',{ad_format:'interstitial'}); }catch(e){}
   },
   rewarded(onReward){                            // показываем только по желанию игрока
+    // Награда = ТОЛЬКО информация/подсказка/косметика (не исход и не метрика), поэтому
+    // выдаём её с одного тапа ВСЕГДА: покажем ролик, если он есть; нет рекламы/отказ — всё равно даём.
+    // Иначе (как было) при отсутствии филла VK награда не срабатывала → «долбить несколько раз».
+    let done=false; const grant=()=>{ if(!done){ done=true; try{ onReward(); }catch(e){} } };
     try{
-      if(window.vkBridge){ window.vkBridge.send('VKWebAppShowNativeAds',{ad_format:'reward'}).then(r=>{ if(r&&r.result) onReward(); }).catch(()=>{}); }
-      else { onReward(); }                        // тест вне VK — выдаём награду, чтобы проверять механику
-    }catch(e){ onReward(); }
+      if(window.vkBridge && window.vkBridge.send){
+        window.vkBridge.send('VKWebAppShowNativeAds',{ad_format:'reward'}).then(grant).catch(grant);
+      } else { grant(); }
+    }catch(e){ grant(); }
   }
 };
 
@@ -47,10 +52,12 @@ const Streak = {
 const SFX={
   ctx:null, on:true,
   _c(){
-    // пересоздать, если контекст закрылся (iOS убивает его после видео со звуком)
-    if(this.ctx && this.ctx.state==='closed'){ this.ctx=null; }
+    // iOS после видео/рекламы уводит контекст в closed/interrupted и resume его не оживляет —
+    // в этих состояниях пересоздаём контекст заново (вызывается на каждом тапе-жесте).
+    if(this.ctx && (this.ctx.state==='closed' || this.ctx.state==='interrupted')){
+      try{ this.ctx.close(); }catch(e){} this.ctx=null;
+    }
     if(!this.ctx){ try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
-    // на iOS после видео контекст уходит в suspended/interrupted — будим на каждом жесте
     if(this.ctx && this.ctx.state!=='running'){ try{ this.ctx.resume(); }catch(e){} }
     return this.ctx;
   },
@@ -466,7 +473,7 @@ function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const t=$(id); t.classList.add('active');
   // сброс прокрутки после кадра — иначе шапку утягивает вверх и на iOS подмерзает скролл
-  requestAnimationFrame(()=>{ try{ t.scrollTop=0; }catch(e){} });
+  requestAnimationFrame(()=>{ try{ t.scrollTop=0; const a=$('app'); if(a)a.scrollTop=0; }catch(e){} });
 }
 
 function renderMetrics(){for(const k of['cap','rep','mor','soul']){$('v-'+k).textContent=Math.round(state.m[k]);$('b-'+k).style.width=clamp(state.m[k])+'%';}}
@@ -630,22 +637,45 @@ function standings(){
 }
 function score(){ return Math.round(state.m.cap+state.m.rep+state.m.mor+state.m.soul); }
 const VK_APP_LINK='https://vk.com/app54658940';
-function shareWeek(){
-  const sc=score(), title=(state.flags.endingKey?computeEnding().t:outcome().t);
-  const text=`Моя компания «Девять» — ${title}\n`+
-    `Скор ${sc}/400\n`+
-    `💰 Капитал ${Math.round(state.m.cap)}  ⭐ Репутация ${Math.round(state.m.rep)}\n`+
-    `❤️ Мораль ${Math.round(state.m.mor)}  🔮 Душа ${Math.round(state.m.soul)}\n\n`+
-    `А каким боссом станешь ты?`;
+/* Рисуем сторис-картинку 1080×1920 с результатом (скор + 4 метрики + бренд) */
+function buildStoryImage(){
+  const W=1080,H=1920,c=document.createElement('canvas'); c.width=W;c.height=H; const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,H); g.addColorStop(0,'#1a1c2b'); g.addColorStop(.55,'#12131d'); g.addColorStop(1,'#0b0c12');
+  x.fillStyle=g; x.fillRect(0,0,W,H);
+  const rg=x.createRadialGradient(W/2,H*0.26,0,W/2,H*0.26,W*0.75); rg.addColorStop(0,'rgba(212,162,74,.20)'); rg.addColorStop(1,'rgba(212,162,74,0)'); x.fillStyle=rg; x.fillRect(0,0,W,H);
+  const sc=score(), title=(state.flags.endingKey?computeEnding().t:outcome().t), m=state.m;
+  x.textAlign='center';
+  x.fillStyle='#D9B978'; x.font='700 84px "Playfair Display",Georgia,serif'; x.fillText('9 ЖИЗНЕЙ', W/2, 320);
+  x.fillStyle='#b7bccb'; x.font='600 30px Manrope,Arial,sans-serif'; x.fillText('СИМУЛЯТОР УПРАВЛЕНИЯ КОМПАНИЕЙ', W/2, 384);
+  x.fillStyle='#F3ECDD'; x.font='700 78px "Playfair Display",Georgia,serif';
+  (function(){ const words=String(title).split(' '); let line='',lines=[]; words.forEach(w=>{ const t=line?line+' '+w:w; if(x.measureText(t).width>900){ lines.push(line); line=w; } else line=t; }); if(line)lines.push(line); const sy=560-(lines.length-1)*44; lines.forEach((l,i)=>x.fillText(l,W/2,sy+i*88)); })();
+  x.fillStyle='#9aa0b3'; x.font='700 34px Manrope,Arial,sans-serif'; x.fillText('С К О Р', W/2, 780);
+  x.fillStyle='#D9B978'; x.font='800 150px Manrope,Arial,sans-serif'; x.fillText(sc+' / 400', W/2, 920);
+  const rows=[['💰 Капитал',Math.round(m.cap)],['⭐ Репутация',Math.round(m.rep)],['❤️ Мораль',Math.round(m.mor)],['🔮 Душа',Math.round(m.soul)]];
+  x.font='600 46px Manrope,Arial,sans-serif'; let yy=1130;
+  rows.forEach(r=>{ x.textAlign='left'; x.fillStyle='#e7e2d4'; x.fillText(r[0],210,yy); x.textAlign='right'; x.fillStyle='#D9B978'; x.fillText(String(r[1]),870,yy); yy+=96; });
+  x.textAlign='center'; x.fillStyle='#F3ECDD'; x.font='italic 700 50px "Playfair Display",Georgia,serif'; x.fillText('А каким боссом станешь ты?', W/2, 1660);
+  x.fillStyle='#8a8f9e'; x.font='600 32px Manrope,Arial,sans-serif'; x.fillText('vk.com/app54658940', W/2, 1770);
+  return c.toDataURL('image/jpeg',0.86);
+}
+function shareLink(){
   try{
-    if(window.vkBridge){
-      // пост на стену — показывает ЦИФРЫ; при отказе/ошибке — обычный шэр ссылки
-      window.vkBridge.send('VKWebAppShowWallPostBox',{ message:text, attachments:VK_APP_LINK })
-        .catch(()=>{ window.vkBridge.send('VKWebAppShare',{link:VK_APP_LINK}).catch(()=>{}); });
-    }
-    else if(navigator.share){ navigator.share({title:'9 Жизней',text:text+'\n'+VK_APP_LINK,url:VK_APP_LINK}).catch(()=>{}); }
-    else { try{navigator.clipboard.writeText(text+'\n'+VK_APP_LINK);}catch(e){} alert('Результат скопирован:\n\n'+text); }
+    if(window.vkBridge && window.vkBridge.send){ window.vkBridge.send('VKWebAppShare',{link:VK_APP_LINK}).catch(()=>{}); }
+    else if(navigator.share){ navigator.share({title:'9 Жизней',url:VK_APP_LINK}).catch(()=>{}); }
+    else { try{navigator.clipboard.writeText(VK_APP_LINK);}catch(e){} }
   }catch(e){}
+}
+function shareWeek(){
+  // Публикуем РЕЗУЛЬТАТ в истории (с цифрами на картинке). Отмена/ошибка → шэр ссылки.
+  let img=null; try{ img=buildStoryImage(); }catch(e){}
+  try{
+    if(window.vkBridge && window.vkBridge.send && img){
+      window.vkBridge.send('VKWebAppShowStoryBox',{
+        background_type:'image', blob:img,
+        attachment:{ text:'go_to', type:'url', url:VK_APP_LINK }
+      }).catch(()=>{ shareLink(); });   // юзер закрыл историю → предлагаем ссылку
+    } else { shareLink(); }
+  }catch(e){ shareLink(); }
 }
 /* ===== Головоломка недели №1: «Распредели бюджет» ===== */
 let pzTimer=null;
@@ -1293,6 +1323,11 @@ document.addEventListener('click',e=>{
   if(!t || t.disabled || t.closest('.pz-stepper')) return;
   try{ SFX.tap(); }catch(err){}
 },true);
+
+/* Скролл-фикс: декоративный фон-слой (#app::before, inset:-25%) делал сам #app прокручиваемым
+   на ~235px. Фокус на кнопке/видео уводил #app в этот фантомный скролл → шапку утягивало,
+   вниз ехало, а вверх на iOS ЗАЛИПАЛО. Жёстко держим #app в нуле — скроллит только .screen. */
+(function(){ var a=$('app'); if(a){ a.addEventListener('scroll',function(){ if(a.scrollTop||a.scrollLeft){ a.scrollTop=0; a.scrollLeft=0; } },{passive:true}); } })();
 
 $('btn-start').onclick=playIntro;
 $('intro-cta').onclick=startGame;
