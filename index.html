@@ -198,6 +198,17 @@
   .pz-val{font-family:'Oswald'; font-size:17px; min-width:30px; color:#fff;}
   .btn[disabled]{opacity:.4; pointer-events:none;}
 
+  /* ===== Головоломка «Найди аномалию» ===== */
+  .anom-row{display:block; width:100%; text-align:left; background:rgba(255,255,255,.04); border:1px solid rgba(212,162,74,.2); border-radius:12px; padding:11px 13px; margin-bottom:9px; cursor:pointer; transition:border-color .15s,background .15s;}
+  .anom-row:active{background:rgba(212,162,74,.12);}
+  .anom-row:hover{border-color:var(--gold);}
+  .anom-row.cleared{opacity:.45; border-style:dashed;}
+  .anom-who{font-weight:600; font-size:14px; color:var(--cream); margin-bottom:6px;}
+  .anom-ok{color:var(--emerald); font-weight:600;}
+  .anom-chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .anom-chips span{font-size:12px; color:#c9cee0; background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:3px 8px;}
+  .anom-reveal{margin:6px 0 14px; font-size:14px; line-height:1.5; color:#eee7d8; background:rgba(212,162,74,.08); border:1px solid rgba(212,162,74,.28); border-left:3px solid var(--gold); border-radius:12px; padding:11px 13px; text-align:left;}
+
   /* ===== Досье команды (HR) ===== */
   #screen-dossier{padding:0 0 calc(20px + env(safe-area-inset-bottom)); overflow-y:auto;}
   .dossier-head{position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:16px 16px 12px; background:linear-gradient(180deg,var(--ink) 70%,transparent); backdrop-filter:blur(6px);}

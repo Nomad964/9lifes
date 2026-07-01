@@ -159,12 +159,54 @@ const EVENTS = {
   ch2_week:{ loc:'ПЕРЕГОВОРКА · НОЧЬ', emoji:'🤝', tag:'Сделка', img:'ch2_05_deal.jpg', video:'vid_ch2_deal.mp4', vtype:'loop',
     title:'Решающие переговоры',
     text:'Партнёр на проводе. От этой сделки зависит, удержишь ли ты ключевого клиента. Время торговаться.',
-    choices:[{label:'Сесть за стол переговоров →',sub:'Закрыть сделку',puzzle:'nego'}] }
+    choices:[{label:'Сесть за стол переговоров →',sub:'Закрыть сделку',puzzle:'nego'}] },
+
+  /* ===== ГЛАВА 3 · Трещины ===== */
+  ch3_intro:{ loc:'ОПЕНСПЕЙС · ТРЕВОГА', emoji:'🚨', tag:'Утечка', img:'ch3_01_leak.jpg',
+    title:'Трещины',
+    text:'Утро начинается с сирены: система засекла утечку. Часть клиентской базы ушла наружу. Василиса бледна, Барон звонит с одним вопросом: «Кто?». Первый ход — за тобой.',
+    choices:[
+      {label:'Поднять всех, искать крота открыто.',sub:'Жёстко и быстро',fx:{rep:+3,mor:-5,soul:-2},rel:{vasilisa:+1},set:{huntOpen:true},next:'ch3_bagira'},
+      {label:'Тихое расследование, без паники.',sub:'Аккуратно',fx:{soul:+3,cap:-2},rel:{tisha:+2},set:{huntQuiet:true},next:'ch3_bagira'},
+      {label:'Замять: «Никакой утечки не было».',sub:'Спасти лицо',fx:{rep:+5,soul:-8},rel:{sonya:-3},set:{coverUp:true},next:'ch3_bagira'} ] },
+
+  ch3_bagira:{ loc:'СТЕКЛЯННАЯ ПЕРЕГОВОРКА', emoji:'🖤', tag:'Багира', img:'ch3_02_bagira.jpg', video:'vid_ch3_bagira.mp4', vtype:'tap',
+    cam:{video:'vid_cam_10.mp4', flag:'sawCam10', cap:'Камера засекла Багиру в кафе с человеком конкурента: «Их клиент будет наш. Молчи — и она в плюсе». Возможно, крот — это она. Но прямых доказательств пока нет.'},
+    title:'Первое подозрение',
+    text:'Все взгляды — на Багиру. Слишком много совпадений: доступы, связи, амбиции. Она стоит перед тобой, спокойная и дерзкая: «Думаешь, это я? Докажи».',
+    choices:[
+      {label:'Предъявить встречу с конкурентом.',sub:'Ты видел её в кафе',fx:{rep:+6,soul:+2},rel:{bagira:-6},set:{accuseBagira:true,bagiraEnemy:true},if:'sawCam10',next:'ch3_cleo'},
+      {label:'Надавить без доказательств.',sub:'Рискованно',fx:{rep:-2,mor:-3},rel:{bagira:-4},set:{accuseBagira:true},next:'ch3_cleo'},
+      {label:'Поверить ей и искать дальше.',sub:'Доверие или наивность',fx:{soul:+4},rel:{bagira:+3},set:{trustBagira:true},next:'ch3_cleo'},
+      {label:'Втихую усилить слежку за ней.',sub:'Холодный расчёт',fx:{cap:+2,soul:-4},rel:{tisha:+1},set:{watchBagira:true},next:'ch3_cleo'} ] },
+
+  ch3_cleo:{ loc:'КОНТЕНТ-СТУДИЯ', emoji:'✨', tag:'Клео', img:'ch3_03_cleo.jpg',
+    cam:{video:'vid_cam_06.mp4', flag:'sawCam06', cap:'Камера в пустой уборной: Клео опускает телефон после идеального селфи — улыбка гаснет, катится слеза: «Улыбайся… всем плевать, что внутри». За глянцем прячется совсем другое.'},
+    title:'Скандал в ленте',
+    text:'Пока ты ищешь крота, в сеть сливают личную переписку Клео — лицо бренда трещит по швам. Телефон разрывается от негатива. Она в панике: «Сделай что-нибудь!».',
+    choices:[
+      {label:'Прикрыть Клео всей мощью PR.',sub:'−деньги, +человек',fx:{cap:-6,mor:+6,soul:+5},rel:{cleo:+4,murka:+1},set:{cleoProtected:true},next:'ch3_tisha'},
+      {label:'Пожертвовать ей ради компании.',sub:'Слить как балласт',fx:{rep:+4,soul:-9},rel:{cleo:-6,sonya:-2},set:{cleoThrown:true},next:'ch3_tisha'},
+      {label:'Обратить скандал в пиар.',sub:'Цинично, но выгодно',fx:{cap:+5,rep:+3,soul:-4},rel:{cleo:+1},set:{scandalSpin:true},next:'ch3_tisha'} ] },
+
+  ch3_tisha:{ loc:'СЕРВЕРНАЯ · ОХОТА', emoji:'💻', tag:'Тиша', img:'ch3_04_tisha_hunt.jpg',
+    cam:{video:'vid_cam_11.mp4', flag:'sawCam11', cap:'Камера у серверной: Тиша и Соня застряли вдвоём в тесном проходе. Он смущённо: «Ой… извини, тесно тут». Между твоим тихим гением и стажёркой что-то теплится.'},
+    title:'След в логах',
+    text:'Тиша не спал двое суток и нашёл зацепку — аномальные ночные доступы. «Дай карт-бланш на аудит всех логов — вычислю крота. Но это значит читать всё, что делали люди».',
+    choices:[
+      {label:'Дать полный доступ к логам.',sub:'Поймать любой ценой',fx:{cap:+3,soul:-6},rel:{tisha:+2},set:{fullAudit:true},next:'ch3_week'},
+      {label:'Только по подозреваемым.',sub:'Баланс',fx:{soul:+3,rep:+2},rel:{tisha:+1,sonya:+1},set:{limitedAudit:true},next:'ch3_week'},
+      {label:'Свернуть охоту — слишком дорого.',sub:'Замять окончательно',fx:{soul:-2,rep:-4},set:{dropHunt:true},next:'ch3_week'} ] },
+
+  ch3_week:{ loc:'НОЧНОЙ ОФИС · АУДИТ', emoji:'🔎', tag:'Аудит', img:'ch3_05_audit.jpg', video:'vid_ch3_leak.mp4', vtype:'loop',
+    title:'Ночь аудита',
+    text:'Офис пуст. На столе — распечатки доступов за неделю. Где-то здесь прячется крот: один вход выбивается из всех — ночь, чужие данные, гигабайты наружу. Найди его.',
+    choices:[{label:'Открыть журнал доступов →',sub:'Вычислить крота',puzzle:'anomaly'}] }
 };
 
 /* Карта глав: weekNum → стартовое событие. 3–7 добавим по мере наполнения. */
-const CHAPTERS={ 1:{start:'intro'}, 2:{start:'ch2_intro'} };
-const MAX_CHAPTER=2;
+const CHAPTERS={ 1:{start:'intro'}, 2:{start:'ch2_intro'}, 3:{start:'ch3_intro'} };
+const MAX_CHAPTER=3;
 
 /* ===== Движок ===== */
 const SAVE_KEY='devyat9_slice_save';
@@ -247,7 +289,7 @@ function renderEvent(){
   $('title-ev').textContent=ev.title;
   $('text').innerHTML=(state.cur==='week')?weekText():(state.cur==='ch2_grisha')?ch2GrishaText():ev.text;
   const box=$('choices');box.innerHTML='';
-  ev.choices.forEach(ch=>{const b=document.createElement('button');b.className='choice';b.innerHTML=ch.label+(ch.sub?`<small>${ch.sub}</small>`:'');b.onclick=()=>applyChoice(ch);box.appendChild(b);});
+  ev.choices.filter(ch=>!ch.if || state.flags[ch.if]).forEach(ch=>{const b=document.createElement('button');b.className='choice';b.innerHTML=ch.label+(ch.sub?`<small>${ch.sub}</small>`:'');b.onclick=()=>applyChoice(ch);box.appendChild(b);});
   if(ev.cam && !state.flags[ev.cam.flag]){
     const cb=document.createElement('button'); cb.className='choice cam-btn';
     cb.innerHTML='🎥 Заглянуть в камеру<small>реклама · подсмотреть тайную сцену</small>';
@@ -275,11 +317,21 @@ function consequenceLines(){
     if(f.bagiraEnemy) L.push('⚔️ Ты пошёл против Багиры — нажил умного и опасного врага.');
     if(f.riskyPR) L.push('✨ Вирусная акция Клео взлетела — шуму много, репутация на качелях.');
     if(f.sonyaMentor) L.push('📋 Ты поверил в Соню — преданный союзник на годы вперёд.');
-  } else {
+  } else if(w===2){
     if(f.priceWar) L.push('⚔️ Ты ответил демпингом — клиентов держишь ценой, но касса худеет.');
     if(f.qualityPlay) L.push('💎 Ставка на качество — медленно, зато репутация крепнет.');
     if(f.poaching) L.push('🎯 Перекуп чужого топа сработал — деньги пришли, но осадок и враг нажиты.');
     if(f.surveillance) L.push('👁️ Слежка за данными людей дала предсказания — и трещину в доверии.');
+  } else if(w===3){
+    if(f.coverUp) L.push('🙈 Ты замял утечку — тишина купила время, но правда любит всплывать.');
+    if(f.huntOpen) L.push('🚨 Открытая охота на крота встряхнула офис — и посеяла страх среди своих.');
+    if(f.accuseBagira) L.push('🖤 Ты обвинил Багиру — если ошибся, нажил умного врага; если прав, отвёл удар.');
+    if(f.trustBagira) L.push('🤝 Ты поверил Багире — она это запомнит. Вопрос лишь, во благо ли.');
+    if(f.cleoProtected) L.push('✨ Ты закрыл Клео собой — она предана тебе, но это стоило денег.');
+    if(f.cleoThrown) L.push('💔 Ты слил Клео ради компании — команда увидела, что ты умеешь предавать.');
+    if(f.scandalSpin) L.push('🎭 Ты обратил скандал в пиар — цинично, но охваты и касса выросли.');
+    if(f.fullAudit) L.push('👁️ Тотальный аудит логов ловит крота — и подтачивает доверие в офисе.');
+    if(f.dropHunt) L.push('🚪 Ты свернул охоту — крот остался внутри. Бомба замедленного действия.');
   }
   if(f.puzzleLine) L.push(f.puzzleLine);
   if(!L.length) L.push('Ты прошёл неделю осторожно, не качнув ни одну чашу весов. Иногда это тоже выбор.');
@@ -334,6 +386,7 @@ function setAlloc(i,d){
 }
 function startPuzzle(name){
   if(name==='nego') return startNego();
+  if(name==='anomaly') return startAnomaly();
   return startBudget();
 }
 function startBudget(){
@@ -470,6 +523,89 @@ function submitPuzzle(force){
       <div class="end-kicker">Результат — ${tier}</div>
       <h2>${icon} Бюджет недели</h2>
       <p>${msg}</p>
+      <div class="stat-row">${Object.keys(fx).map(k=>`${METRIC_NAMES[k]} ${fx[k]>0?'+':''}${fx[k]}`).join(' · ')}</div>
+      <button class="btn btn-primary" style="min-width:230px;" onclick="endSlice()">Дальше → итоги недели</button>
+    </div>`;
+}
+
+/* ===== Головоломка №3: «Найди аномалию» (аудит доступов) ===== */
+function startAnomaly(){
+  const staff=[
+    {name:'Логистика · Р. Ковач',  own:'маршруты доставки'},
+    {name:'Бухгалтерия · Л. Дейн',  own:'платёжные ведомости'},
+    {name:'Маркетинг · И. Соул',    own:'рекламные метрики'},
+    {name:'Продажи · Т. Марло',     own:'воронка сделок'},
+    {name:'Поддержка · Э. Нур',     own:'тикеты клиентов'},
+    {name:'Склад · Г. Пайк',        own:'остатки товара'}
+  ];
+  const n=staff.length, mole=Math.floor(Math.random()*n);
+  const others=[...Array(n).keys()].filter(i=>i!==mole);
+  for(let i=others.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[others[i],others[j]]=[others[j],others[i]];}
+  const dNight=others[0], dForeign=others[1], dBig=others[2];
+  const nightT=['03:12','02:47','04:05','01:58'], dayT=['10:22','14:38','16:10','11:45','15:03','09:37'];
+  const bigV=['2.4 ГБ','1.8 ГБ','3.1 ГБ'], normV=['48 МБ','120 МБ','16 МБ','75 МБ','210 МБ'];
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const rows=staff.map((s,i)=>{
+    const night=(i===mole||i===dNight), foreign=(i===mole||i===dForeign), big=(i===mole||i===dBig);
+    return { name:s.name, time:night?pick(nightT):pick(dayT), target:foreign?'клиентская база':s.own, vol:big?pick(bigV):pick(normV), cleared:false };
+  });
+  state.anomaly={ rows, answer:mole, picked:null, timeLeft:35, done:false };
+  renderAnomaly(); show('screen-puzzle'); startAnomalyTimer();
+}
+function startAnomalyTimer(){
+  clearInterval(pzTimer);
+  pzTimer=setInterval(()=>{
+    if(!state.anomaly||state.anomaly.done){ clearInterval(pzTimer); return; }
+    state.anomaly.timeLeft--;
+    const el=$('pz-timer'); if(el){ el.textContent=state.anomaly.timeLeft+' с'; if(state.anomaly.timeLeft<=6) el.classList.add('low'); }
+    if(state.anomaly.timeLeft<=6 && state.anomaly.timeLeft>0) SFX.tick();
+    if(state.anomaly.timeLeft<=0){ clearInterval(pzTimer); anomalyResult(-1,true); }
+  },1000);
+}
+function anomalyHint(){
+  Ads.rewarded(()=>{
+    const a=state.anomaly; if(!a||a.done) return;
+    const decoys=a.rows.map((r,i)=>i).filter(i=>i!==a.answer && !a.rows[i].cleared);
+    if(decoys.length){ a.rows[decoys[Math.floor(Math.random()*decoys.length)]].cleared=true; renderAnomaly(); }
+  });
+}
+function pickSuspect(i){ if(state.anomaly && !state.anomaly.done) anomalyResult(i,false); }
+function renderAnomaly(){
+  const a=state.anomaly;
+  const rows=a.rows.map((r,i)=>`
+    <button class="anom-row ${r.cleared?'cleared':''}" ${r.cleared?'disabled':''} onclick="pickSuspect(${i})">
+      <div class="anom-who">${r.name}${r.cleared?' · <span class="anom-ok">✓ чисто</span>':''}</div>
+      <div class="anom-chips"><span>🕐 ${r.time}</span><span>📂 ${r.target}</span><span>📦 ${r.vol}</span></div>
+    </button>`).join('');
+  $('screen-puzzle').innerHTML=`<div class="pz-wrap">
+      <div class="end-kicker">Задача недели · аудит доступов</div>
+      <div class="pz-timer ${a.timeLeft<=6?'low':''}" id="pz-timer">${a.timeLeft} с</div>
+      <h2>🔎 Найди крота</h2>
+      <p>Крот выдаёт себя <b>тремя признаками разом</b>: вход <b>ночью</b>, доступ к <b>чужим данным</b> (клиентская база) и <b>аномальный объём</b>. У остальных сходится максимум один. Вычисли и ткни.</p>
+      ${rows}
+      <button class="btn" style="min-width:230px;margin:10px 0;" onclick="anomalyHint()">💡 Исключить одного (реклама)</button>
+    </div>`;
+}
+function anomalyResult(pick,timeout){
+  clearInterval(pzTimer);
+  const a=state.anomaly; a.done=true; a.picked=pick;
+  const correct=(pick===a.answer), fast=a.timeLeft>=15;
+  let tier,fx,msg;
+  if(correct && fast){ tier='Блестяще'; fx={rep:8,soul:3}; msg='Ты вычислил крота мгновенно: ночной вход, чужая база, гигабайты наружу. Утечку перекрыли, данные спасли.'; state.flags.moleCaught=true; }
+  else if(correct){ tier='Норма'; fx={rep:4}; msg='Ты нашёл крота — но пока думал, часть базы уже утекла. Дыру закрыли, осадок остался.'; state.flags.moleCaught=true; }
+  else { tier='Провал'; fx={rep:-6,soul:-2}; msg=timeout?'Время вышло — крот успел уйти вместе с базой. Утечка не раскрыта.':'Ты указал не на того. Настоящий крот тихо ушёл, прихватив клиентов.'; state.flags.moleEscaped=true; }
+  if(tier==='Провал') SFX.bad(); else SFX.good();
+  for(const k in fx) state.m[k]=clamp(state.m[k]+fx[k]);
+  renderMetrics();
+  state.flags.puzzleLine='🔎 Аудит доступов — '+tier+': '+msg;
+  const icon=tier==='Блестяще'?'🏆':tier==='Норма'?'👍':'⚠️';
+  const win=a.rows[a.answer];
+  const reveal=`Крот был: <b>${win.name}</b> — ${win.time} · клиентская база · ${win.vol}.`;
+  $('screen-puzzle').innerHTML=`<div class="pz-wrap">
+      <div class="end-kicker">Результат — ${tier}</div>
+      <h2>${icon} Найди крота</h2>
+      <p>${msg}</p>
+      <div class="anom-reveal">${reveal}</div>
       <div class="stat-row">${Object.keys(fx).map(k=>`${METRIC_NAMES[k]} ${fx[k]>0?'+':''}${fx[k]}`).join(' · ')}</div>
       <button class="btn btn-primary" style="min-width:230px;" onclick="endSlice()">Дальше → итоги недели</button>
     </div>`;
