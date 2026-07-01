@@ -78,6 +78,7 @@ const EVENTS = {
       {label:'Указать на ошибку при всех.',sub:'Дисциплина',fx:{rep:+2,mor:-6,soul:-4},rel:{sonya:-4},next:'felix'},
     ]},
   felix:{ loc:'КАМОРКА · У ОКНА', emoji:'🚀', tag:'Феликс', img:'ev03_felix_plan.jpg',
+    cam:{video:'vid_cam_03.mp4', flag:'sawCam03', cap:'Камера поймала момент: Феликс, думая, что один в переговорке, садится в кресло Барона и примеряет власть. Его амбиции — не просто слова. Держи это в уме.'},
     title:'План захвата рынка',
     text:'Феликс врывается с презентацией: «Удвоим выручку за квартал. Демпинг, выжимаем поставщиков, режем лишнее. Старики осторожничают — а нам надо рвать». Глаза горят.',
     choices:[
@@ -102,6 +103,7 @@ const EVENTS = {
       {label:'Взять рискованный кредит.',sub:'Деньги сейчас, долг потом',fx:{cap:+14,rep:-3},set:{loan:true},rel:{vasilisa:-2},next:'bagira'},
     ]},
   bagira:{ loc:'КАМОРКА · ПОЗДНИЙ ВЕЧЕР', emoji:'🖤', tag:'Багира', img:'ev06_bagira_offer.jpg', video:'vid_ev06_bagira.mp4', vtype:'tap',
+    cam:{video:'vid_cam_02.mp4', flag:'sawCam02', cap:'На камере: ещё до разговора с тобой Багира что-то шепчет младшему сотруднику — тот бледнеет и кивает. Она вербует людей в свою тень. Её «сделка» — не спонтанная.'},
     title:'Шёпот в полумраке',
     text:'Багира прикрывает дверь. «У меня есть слив по конкуренту. Сольём — заберём их клиента до конца месяца. Никто не узнает. Играем по-взрослому?»',
     choices:[
@@ -146,6 +148,7 @@ const EVENTS = {
       {label:'Осадить Феликса при всех.',sub:'Поставить на место',fx:{soul:+2,mor:-2},rel:{felix:-4},next:'ch2_tisha'},
     ]},
   ch2_tisha:{ loc:'СЕРВЕРНАЯ', emoji:'💻', tag:'Тиша', img:'ch2_04_tisha.jpg', video:'vid_ch2_tisha.mp4', vtype:'tap',
+    cam:{video:'vid_cam_05.mp4', flag:'sawCam05', cap:'Камера подсмотрела: тихий Тиша украдкой оставляет Соне записку и кофе — и убегает, пока не заметила. За гением-интровертом прячется что-то тёплое.'},
     title:'Тиша выходит из тени',
     text:'Тиша впервые говорит уверенно: «Я собрал систему, что предскажет, каких клиентов уведут. Но ей нужны данные людей — без их ведома. Включаем?»',
     choices:[
@@ -245,6 +248,12 @@ function renderEvent(){
   $('text').innerHTML=(state.cur==='week')?weekText():(state.cur==='ch2_grisha')?ch2GrishaText():ev.text;
   const box=$('choices');box.innerHTML='';
   ev.choices.forEach(ch=>{const b=document.createElement('button');b.className='choice';b.innerHTML=ch.label+(ch.sub?`<small>${ch.sub}</small>`:'');b.onclick=()=>applyChoice(ch);box.appendChild(b);});
+  if(ev.cam && !state.flags[ev.cam.flag]){
+    const cb=document.createElement('button'); cb.className='choice cam-btn';
+    cb.innerHTML='🎥 Заглянуть в камеру<small>реклама · подсмотреть тайную сцену</small>';
+    cb.onclick=()=>{ SFX.click(); Ads.rewarded(()=>openCam(ev.cam)); };
+    box.appendChild(cb);
+  }
 }
 
 function outcome(){
@@ -493,6 +502,7 @@ function endSlice(){
       <div class="end-score">Скор: <b>${score()}</b> / 400</div>
       <p class="end-note">${note}</p>
       <button class="btn" style="min-width:240px;margin-bottom:10px;" onclick="shareWeek()">↗ Поделиться итогом</button>
+      <button class="btn" style="min-width:240px;margin-bottom:10px;" onclick="Ads.rewarded(replayChapter)">🔄 Переиграть неделю (реклама)</button>
       ${mainBtn}
     </div>`;
   if(more) save(); else localStorage.removeItem(SAVE_KEY);
@@ -503,12 +513,37 @@ function nextChapter(){
   Ads.interstitial();                 // мягкий интерстишел на стыке глав
   const ch=CHAPTERS[state.weekNum];
   state.cur = ch ? ch.start : 'intro';
+  snapshot();
   save(); renderMetrics(); renderEvent(); show('screen-game');
 }
 
 function flashSaved(){const s=$('saved');s.style.opacity=1;setTimeout(()=>s.style.opacity=0,800);}
-function startGame(){state=fresh();try{state.streak=Streak.check();}catch(e){}renderMetrics();renderEvent();show('screen-game');save();}
+function startGame(){state=fresh();try{state.streak=Streak.check();}catch(e){}snapshot();renderMetrics();renderEvent();show('screen-game');save();}
 function hardReset(){startGame();}
+function snapshot(){ try{ state._snap=JSON.stringify({m:state.m,flags:state.flags,rel:state.rel,weekNum:state.weekNum,cur:state.cur}); }catch(e){} }
+function replayChapter(){
+  if(!state||!state._snap) return hardReset();
+  const s=JSON.parse(state._snap);
+  state.m={...s.m}; state.flags={...s.flags}; state.rel={...s.rel}; state.weekNum=s.weekNum; state.cur=s.cur;
+  save(); renderMetrics(); renderEvent(); show('screen-game');
+}
+/* ===== Камеры офиса (reward) ===== */
+function openCam(cam){
+  const el=$('screen-cam');
+  el.innerHTML=`<div class="cam-wrap">
+    <div class="cam-kicker">🎥 Камера офиса — что происходит</div>
+    <video class="cam-video" playsinline autoplay loop src="${CLIP_DIR}${cam.video}?v=3"></video>
+    <div class="cam-cap">${cam.cap}</div>
+    <button class="btn btn-primary" style="min-width:220px;" onclick="closeCam('${cam.flag}')">Понятно →</button>
+  </div>`;
+  const v=el.querySelector('video'); if(v){ v.muted=false; v.play().catch(()=>{ v.muted=true; v.play().catch(()=>{}); }); }
+  show('screen-cam');
+}
+function closeCam(flag){
+  if(flag) state.flags[flag]=true;
+  try{ const v=$('screen-cam').querySelector('video'); if(v) v.pause(); }catch(e){}
+  save(); show('screen-game'); renderEvent();
+}
 
 /* INTRO sequence */
 function playIntro(){

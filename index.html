@@ -179,6 +179,14 @@
   .pz-timer{font-family:'Oswald'; font-size:24px; letter-spacing:1px; color:var(--gold-soft); margin-bottom:4px;}
   .pz-timer.low{color:#e8688a;}
   .nego-stat{font-family:'Oswald'; letter-spacing:1px; color:var(--gold-soft); font-size:19px;}
+  /* ===== CAMERA (reward) ===== */
+  #screen-cam{align-items:center; justify-content:center; text-align:center; padding:20px 16px calc(30px + env(safe-area-inset-bottom));}
+  .cam-wrap{width:100%; max-width:340px;}
+  .cam-kicker{font-family:'Oswald'; letter-spacing:2px; font-size:12px; color:var(--gold-soft); text-transform:uppercase; margin-bottom:10px;}
+  .cam-video{width:100%; aspect-ratio:9/16; max-height:60vh; object-fit:cover; border-radius:16px; border:1px solid rgba(212,162,74,.4); box-shadow:0 8px 30px rgba(0,0,0,.5); background:#000;}
+  .cam-cap{margin:14px 0 16px; font-size:14.5px; line-height:1.55; color:#f0ebdf; background:rgba(212,162,74,.08); border:1px solid rgba(212,162,74,.28); border-left:3px solid var(--gold); border-radius:12px; padding:12px 14px; text-align:left;}
+  .choice.cam-btn{border:1px dashed var(--gold); background:linear-gradient(180deg,rgba(212,162,74,.1),rgba(255,255,255,.02));}
+  .choice.cam-btn small{color:var(--gold-soft);}
   .btn small{display:block; font-size:10.5px; color:#cdd2df; font-weight:400; margin-top:3px; letter-spacing:0;}
   .pz-row{display:flex; justify-content:space-between; align-items:center; gap:10px; background:rgba(255,255,255,.04); border:1px solid rgba(212,162,74,.18); border-radius:12px; padding:10px 12px; margin-bottom:9px;}
   .pz-info{display:flex; align-items:center; gap:10px; text-align:left;}
@@ -254,6 +262,9 @@
 
   <!-- PUZZLE -->
   <section class="screen" id="screen-puzzle"></section>
+
+  <!-- CAMERA (reward) -->
+  <section class="screen" id="screen-cam"></section>
 </div>
 
 <script src="./game.js"></script>
