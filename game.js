@@ -456,7 +456,9 @@ function save(){if(state)localStorage.setItem(SAVE_KEY,JSON.stringify(state));fl
 function show(id){
   // уходя с игрового экрана — глушим и останавливаем видео сцены
   if(id!=='screen-game'){ try{const v=$('scene-vid'); v.pause(); v.muted=true; v.removeAttribute('src'); v.load&&v.load();}catch(e){} }
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const t=$(id); t.classList.add('active');
+  try{ t.scrollTop=0; }catch(e){}   // сброс прокрутки — иначе шапку утягивает вверх между сценами/главами
 }
 
 function renderMetrics(){for(const k of['cap','rep','mor','soul']){$('v-'+k).textContent=Math.round(state.m[k]);$('b-'+k).style.width=clamp(state.m[k])+'%';}}
@@ -495,6 +497,7 @@ function soulVerdict(){const s=state.m.soul;
   return'Ты балансируешь между <b>людьми и эффективностью</b>. Куда качнёшь — решат следующие недели.';}
 
 function renderEvent(){
+  try{ $('screen-game').scrollTop=0; }catch(e){}   // каждая новая сцена начинается сверху — с шапки и метрик
   const ev=EVENTS[state.cur];
   const scene=$('scene'), vid=$('scene-vid'), img=$('scene-img');
   const ctls=$('scene-ctls'), pauseBtn=$('scene-pause'), soundBtn=$('scene-sound');
