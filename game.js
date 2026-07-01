@@ -1338,6 +1338,21 @@ document.addEventListener('touchstart',function(e){
   if(s.scrollTop<=0) s.scrollTop=1; else if(s.scrollTop>=max) s.scrollTop=max-1;
 },{passive:true});
 
+/* iOS-webview: после СВОРАЧИВАНИЯ/восстановления приложения (или ресайза) скролл-контейнер
+   «замерзает» и не поднимается вверх. Игрок подтвердил: блокировка/разблокировка экрана
+   лечит — то есть спасает РЕПЕЙНТ. Делаем этот репейнт программно (дёргаем overflow активного
+   экрана) при возврате в приложение, показе страницы и ресайзе. */
+function _unfreezeScroll(){
+  var s=document.querySelector('.screen.active'); if(!s) return;
+  var top=s.scrollTop;
+  s.style.overflowY='hidden'; void s.offsetHeight; s.style.overflowY=''; // форс-репейнт контейнера
+  s.scrollTop = top>0 ? top : 1;                                          // не оставлять на самом краю
+}
+document.addEventListener('visibilitychange',function(){ if(!document.hidden){ setTimeout(_unfreezeScroll,60); setTimeout(_unfreezeScroll,300); } });
+window.addEventListener('pageshow', function(){ setTimeout(_unfreezeScroll,60); });
+window.addEventListener('focus', function(){ setTimeout(_unfreezeScroll,60); });
+window.addEventListener('resize', function(){ setTimeout(_unfreezeScroll,60); });
+
 $('btn-start').onclick=playIntro;
 $('intro-cta').onclick=startGame;
 $('restart').onclick=hardReset;
