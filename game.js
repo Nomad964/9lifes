@@ -545,6 +545,70 @@ function closeCam(flag){
   save(); show('screen-game'); renderEvent();
 }
 
+/* ===== Досье команды (HR-глоссарий) ===== */
+const HERO_DIR = './assets/heroes/';
+const ROSTER = [
+  { id:'baron',    name:'Барон',    role:'Основатель · экс-CEO',        img:'baron.jpg',
+    tag:'Наблюдает со стороны',
+    bio:'Легенда Котополиса — собрал «Девять» практически из гаража. Выгорел и однажды просто отдал тебе ключи с одной фразой: «Для всех хорошим не будешь». Ушёл, но следит за каждым твоим шагом.' },
+  { id:'sonya',    name:'Соня',     role:'Стажёрка · твои глаза',       img:'sonya.jpg',
+    tag:'Совесть команды',
+    bio:'Пришла вчера и ещё верит, что бизнес может быть честным. Её глазами ты видишь офис — и она первой заметит, если ты начнёшь меняться не в ту сторону.' },
+  { id:'vasilisa', name:'Василиса', role:'Операционный директор',        img:'vasilisa.jpg',
+    tag:'Опора или угроза',
+    bio:'Держит всю компанию на плечах, пока другие интригуют. Сильная, прямая, слабости не прощает — но её лояльность стоит десяти чужих. Между ней и Марселем — давняя недосказанность.' },
+  { id:'marsel',   name:'Марсель',  role:'Коммерческий директор',        img:'marsel.jpg',
+    tag:'Уязвим — потому опасен',
+    bio:'Когда-то звезда продаж, теперь боится, что молодые его обходят. Кризис среднего возраста с дорогими часами. Готов рискнуть всем, лишь бы снова стать первым.' },
+  { id:'felix',    name:'Феликс',   role:'Продакт-лид',                  img:'felix.jpg',
+    tag:'Союзник или мятеж',
+    bio:'Молодой, дерзкий, реально талантливый — и уверен, что это кресло должно быть его. Дашь расти — получишь гения. Прижмёшь — получишь бунт.' },
+  { id:'grisha',   name:'Гриша',    role:'Руководитель логистики',       img:'grisha.jpg',
+    tag:'Держит склад и совесть',
+    bio:'Работяга и семьянин: двое детей, ипотека, ни одной жалобы. Не подведёт никогда — но и ломается тихо, без слов. Легко не заметить, что он давно на пределе.' },
+  { id:'bagira',   name:'Багира',   role:'Директор по развитию',         img:'bagira.jpg',
+    tag:'Козырь или крот',
+    bio:'Femme fatale офиса: сделки, слияния и чужие секреты — её стихия. Красива, умна, играет вдолгую. Ты никогда не знаешь наверняка, на чьей она стороне.' },
+  { id:'cleo',     name:'Клео',     role:'Директор по маркетингу',       img:'cleo.jpg',
+    tag:'Репутация на лезвии',
+    bio:'Лицо бренда «Девять», миллионы подписчиков, идеальная картинка. Но за фильтрами — страх, что однажды хайп обернётся против неё. И этот день ближе, чем кажется.' },
+  { id:'murka',    name:'Мурка',    role:'HR-директор',                  img:'murka.jpg',
+    tag:'Пульс морали',
+    bio:'Душа коллектива: помнит дни рождения и чужие беды. К ней идут выговориться — и она знает про всех всё. Пока ты гонишься за цифрами, она считает людей.' },
+  { id:'tisha',    name:'Тиша',     role:'Технический директор (CTO)',   img:'tisha.jpg',
+    tag:'Знает, кто крот',
+    bio:'Тихий гений, построивший всю платформу «Девять». Говорит редко, видит всё — включая утечки и тех, кто за ними стоит. Молчаливый, но совсем не слепой.' },
+];
+function openDossier(){
+  const grid=$('dossier-grid');
+  grid.innerHTML=ROSTER.map(h=>`
+    <button class="dossier-tile" onclick="openHero('${h.id}')">
+      <img loading="lazy" src="${HERO_DIR}${h.img}" alt="${h.name}">
+      <div class="dt-fade"></div>
+      <div class="dt-meta"><b>${h.name}</b><small>${h.role}</small></div>
+    </button>`).join('');
+  $('dossier-detail').classList.remove('show');
+  show('screen-dossier');
+}
+function openHero(id){
+  const h=ROSTER.find(x=>x.id===id); if(!h) return;
+  try{SFX.click();}catch(e){}
+  $('dossier-detail').innerHTML=`
+    <div class="hero-card">
+      <img class="hero-img" src="${HERO_DIR}${h.img}" alt="${h.name}">
+      <div class="hero-body">
+        <div class="hero-name">${h.name}</div>
+        <div class="hero-role">${h.role}</div>
+        <div class="hero-tag">${h.tag}</div>
+        <p class="hero-bio">${h.bio}</p>
+        <button class="btn" onclick="closeHero()">← К команде</button>
+      </div>
+    </div>`;
+  $('dossier-detail').classList.add('show');
+  $('dossier-detail').scrollTop=0;
+}
+function closeHero(){ $('dossier-detail').classList.remove('show'); }
+
 /* INTRO sequence */
 function playIntro(){
   show('screen-intro');
@@ -560,6 +624,8 @@ function playIntro(){
 $('btn-start').onclick=playIntro;
 $('intro-cta').onclick=startGame;
 $('restart').onclick=hardReset;
+$('btn-dossier').onclick=openDossier;
+$('dossier-back').onclick=()=>show('screen-title');
 $('btn-continue').onclick=()=>{state=load()||fresh();renderMetrics();renderEvent();show('screen-game');};
 
 /* continue button if save exists */
