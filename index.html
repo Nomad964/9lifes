@@ -183,7 +183,9 @@
   #screen-cam{align-items:center; justify-content:center; text-align:center; padding:20px 16px calc(30px + env(safe-area-inset-bottom));}
   .cam-wrap{width:100%; max-width:340px;}
   .cam-kicker{font-family:'Oswald'; letter-spacing:2px; font-size:12px; color:var(--gold-soft); text-transform:uppercase; margin-bottom:10px;}
-  .cam-video{width:100%; aspect-ratio:9/16; max-height:60vh; object-fit:cover; border-radius:16px; border:1px solid rgba(212,162,74,.4); box-shadow:0 8px 30px rgba(0,0,0,.5); background:#000;}
+  .cam-videowrap{position:relative; display:inline-block; width:100%;}
+  .cam-video{display:block; width:100%; aspect-ratio:9/16; max-height:60vh; object-fit:cover; border-radius:16px; border:1px solid rgba(212,162,74,.4); box-shadow:0 8px 30px rgba(0,0,0,.5); background:#000;}
+  .cam-videowrap .scene-ctls{position:absolute; right:10px; bottom:10px;}
   .cam-cap{margin:14px 0 16px; font-size:14.5px; line-height:1.55; color:#f0ebdf; background:rgba(212,162,74,.08); border:1px solid rgba(212,162,74,.28); border-left:3px solid var(--gold); border-radius:12px; padding:12px 14px; text-align:left;}
   .choice.cam-btn{border:1px dashed var(--gold); background:linear-gradient(180deg,rgba(212,162,74,.1),rgba(255,255,255,.02));}
   .choice.cam-btn small{color:var(--gold-soft);}
@@ -210,7 +212,7 @@
   .anom-reveal{margin:6px 0 14px; font-size:14px; line-height:1.5; color:#eee7d8; background:rgba(212,162,74,.08); border:1px solid rgba(212,162,74,.28); border-left:3px solid var(--gold); border-radius:12px; padding:11px 13px; text-align:left;}
 
   /* ===== Досье команды (HR) ===== */
-  #screen-dossier{padding:0 0 calc(20px + env(safe-area-inset-bottom)); overflow-y:auto;}
+  #screen-dossier{padding:0 0 calc(104px + env(safe-area-inset-bottom)); overflow-y:auto;}
   .dossier-head{position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:16px 16px 12px; background:linear-gradient(180deg,var(--ink) 70%,transparent); backdrop-filter:blur(6px);}
   .dossier-title{font-family:'Playfair Display',serif; font-size:20px; color:var(--gold); letter-spacing:.5px;}
   .dossier-lead{padding:0 18px 14px; font-size:13.5px; line-height:1.5; color:#b7bccb; text-align:center;}
