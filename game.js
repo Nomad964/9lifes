@@ -202,12 +202,247 @@ const EVENTS = {
   ch3_week:{ loc:'НОЧНОЙ ОФИС · АУДИТ', emoji:'🔎', tag:'Аудит', img:'ch3_05_audit.jpg', video:'vid_ch3_leak.mp4', vtype:'loop',
     title:'Ночь аудита',
     text:'Офис пуст. На столе — распечатки доступов за неделю. Где-то здесь прячется крот: один вход выбивается из всех — ночь, чужие данные, гигабайты наружу. Найди его.',
-    choices:[{label:'Открыть журнал доступов →',sub:'Вычислить крота',puzzle:'anomaly'}] }
+    choices:[{label:'Открыть журнал доступов →',sub:'Вычислить крота',puzzle:'anomaly'}] },
+
+  /* ===================== ГЛАВА 4 · Цена роста ===================== */
+  ch4_intro:{ loc:'ОПЕНСПЕЙС · РОСТ', emoji:'📈', tag:'Рост', img:'ch4_01_growth.jpg',
+    cam:{video:'vid_cam_18.mp4', flag:'sawCam18', cap:'Камера: сотрудники сбились в кучки и полушёпотом обсуждают тебя и твои решения. Одни восхищаются, другие качают головой — офис уже живёт слухами.'},
+    title:'Цена роста',
+    text:'«Девять» прёт вверх: новые столы, новые лица, поток заказов. Но люди трещат по швам — расширяться нужно вчера, а касса не резиновая. С чего начнёшь?',
+    choices:[
+      {label:'Гнать рост — нанимать всех подряд.',sub:'Скорость важнее',fx:{cap:+8,mor:-6,soul:-4},rel:{felix:+2},set:{growthFast:true},next:'ch4_murka'},
+      {label:'Расти аккуратно, беречь людей.',sub:'−темп, +команда',fx:{cap:-3,mor:+7,soul:+5},rel:{murka:+3,vasilisa:+1},set:{growthCare:true},next:'ch4_murka'},
+      {label:'Заморозить найм, выжать своих.',sub:'Экономия на пределе',fx:{cap:+5,mor:-9,soul:-5},rel:{grisha:-2,murka:-2},set:{growthSqueeze:true},next:'ch4_murka'} ] },
+
+  ch4_murka:{ loc:'HR-УГОЛОК', emoji:'🧡', tag:'Мурка', img:'ch4_02_murka.jpg', video:'vid_ch4_murka.mp4', vtype:'tap',
+    cam:{video:'vid_cam_09.mp4', flag:'sawCam09', cap:'Камера: Мурка тайком доделывает завал уставшего коллеги и оставляет записку «Держись, ты не один». Она тянет чужую боль молча — и сама уже на исходе.'},
+    title:'Мурка на пределе',
+    text:'Мурка кладёт на стол стопку заявлений: «Люди выгорают. Ещё немного — и я их не удержу. Дай мне рычаги, или мы потеряем лучших».',
+    choices:[
+      {label:'Ввести день отдыха и заботу о команде.',sub:'−деньги, +душа',fx:{cap:-6,mor:+9,soul:+7},rel:{murka:+4,grisha:+2},set:{careProgram:true},next:'ch4_grisha'},
+      {label:'Дать премию за переработки.',sub:'Купить лояльность',fx:{cap:-4,mor:+4},rel:{murka:+1},next:'ch4_grisha'},
+      {label:'«Сейчас не время для нежностей».',sub:'Терпи',fx:{cap:+3,mor:-7,soul:-5},rel:{murka:-4},set:{ignoredBurnout:true},next:'ch4_grisha'} ] },
+
+  ch4_grisha:{ loc:'ОТДЕЛ ЛОГИСТИКИ · ЗАВАЛ', emoji:'📦', tag:'Гриша', img:'ch4_03_grisha.jpg',
+    cam:{video:'vid_cam_14.mp4', flag:'sawCam14', cap:'Камера поймала тёплый неловкий момент между Муркой и Гришей за поздним кофе. Кажется, здесь зреет не только рабочая дружба.'},
+    title:'Гриша тонет в заказах',
+    text:'Гриша не уходил домой третьи сутки: «Я вывезу, босс. Но дети меня уже забывают». Он не жалуется — но ты видишь, чего это стоит.',
+    choices:[
+      {label:'Силой отправить его домой, прикрыть смену.',sub:'Человек важнее',fx:{mor:+6,soul:+6,cap:-3},rel:{grisha:+4},set:{grishaSaved:true},next:'ch4_hire'},
+      {label:'Автоматизировать склад алгоритмом Тиши.',sub:'Эффективно, но людей под нож',fx:{cap:+8,soul:-6},rel:{tisha:+2,grisha:-2},set:{autoWarehouse:true},next:'ch4_hire'},
+      {label:'«Ещё рывок, потом отдохнёшь».',sub:'Выжать',fx:{cap:+4,mor:-6,soul:-4},rel:{grisha:-4},set:{grishaBroken:true},next:'ch4_hire'} ] },
+
+  ch4_hire:{ loc:'ПЕРЕГОВОРКА · НАЙМ', emoji:'🤝', tag:'Найм', img:'ch4_04_hire.jpg',
+    cam:{video:'vid_cam_20.mp4', flag:'sawCam20', cap:'Камера в пустом коридоре: Мурка тихо, себе под нос: «Я всё время спасаю всех… а меня — кто?». За её улыбкой прячется большая усталость.'},
+    title:'Кого впустить в команду',
+    text:'Перед тобой финалист на ключевую роль: блестящий, но с репутацией «человека-конфликта». Василиса против, Феликс — за. Решать тебе.',
+    choices:[
+      {label:'Взять звезду — талант решает.',sub:'Риск ради силы',fx:{cap:+7,rep:+3,mor:-3},rel:{felix:+2,vasilisa:-2},set:{hiredShark:true},next:'ch4_week'},
+      {label:'Взять надёжного командного игрока.',sub:'Культура важнее',fx:{mor:+5,soul:+4},rel:{vasilisa:+2,murka:+2},set:{hiredTeam:true},next:'ch4_week'},
+      {label:'Никого — рано раздувать штат.',sub:'Осторожность',fx:{cap:+4,rep:-2},next:'ch4_week'} ] },
+
+  ch4_week:{ loc:'ОФИС · КОНЕЦ НЕДЕЛИ', emoji:'🗓️', tag:'Смены', img:'ch4_05_shifts.jpg', video:'vid_ch4_growth.mp4', vtype:'loop',
+    title:'Собери смену',
+    text:'Пик заказов, а людей впритык. Нужно закрыть все слоты недели — и не спалить команду переработками. Раскидай смены с умом.',
+    choices:[{label:'Свести график смен →',sub:'Логистика на пределе',puzzle:'shifts'}] },
+
+  /* ===================== ГЛАВА 5 · Точка невозврата ===================== */
+  ch5_intro:{ loc:'БОРДРУМ · ИНВЕСТОР', emoji:'💼', tag:'Инвестор', img:'ch5_01_investor.jpg', video:'vid_ch5_investor.mp4', vtype:'tap',
+    cam:{video:'vid_cam_25.mp4', flag:'sawCam25', cap:'Камера застала острый момент: двое из твоих на грани — то ли признание, то ли разрыв. Личные драмы кипят прямо под рабочим лоском.'},
+    title:'Точка невозврата',
+    text:'Крупный инвестор кладёт на стол деньги, каких «Девять» не видела. Но условия жёсткие: контроль, сокращения, его люди в совете. Один росчерк — и назад пути нет.',
+    choices:[
+      {label:'Взять деньги на его условиях.',sub:'Мощь ценой свободы',fx:{cap:+16,soul:-8,mor:-4},rel:{vasilisa:-2},set:{tookInvestor:true},next:'ch5_marsel'},
+      {label:'Торговаться за мягкие условия.',sub:'Баланс',fx:{cap:+7,rep:+2},rel:{vasilisa:+1},set:{softInvestor:true},next:'ch5_marsel'},
+      {label:'Отказать — расти на свои.',sub:'Свобода дороже',fx:{cap:-4,soul:+7,mor:+3},rel:{baron:+2,murka:+1},set:{refusedInvestor:true},next:'ch5_marsel'} ] },
+
+  ch5_marsel:{ loc:'У ОКНА · СУМЕРКИ', emoji:'🥃', tag:'Марсель', img:'ch5_02_marsel.jpg',
+    cam:{video:'vid_cam_07.mp4', flag:'sawCam07', cap:'Камера: Марсель достаёт из стола старое фото с Василисой и шепчет «Сколько лет прошло…». Он так и не отпустил.'},
+    title:'Марсель на распутье',
+    text:'Марсель, звезда продаж в кризисе среднего возраста, боится оказаться за бортом при новом инвесторе: «Дай мне большой контракт. Мне надо доказать, что я ещё в игре».',
+    choices:[
+      {label:'Доверить ему ва-банк-сделку.',sub:'Шанс воскреснуть',fx:{cap:+6,rep:+2},rel:{marsel:+4},set:{trustMarsel:true},next:'ch5_vasilisa'},
+      {label:'Поддержать по-человечески, без ставки.',sub:'Тепло, но без риска',fx:{soul:+5,mor:+2},rel:{marsel:+2},next:'ch5_vasilisa'},
+      {label:'Намекнуть, что его время уходит.',sub:'Жёстко и честно',fx:{cap:+2,soul:-4},rel:{marsel:-5},set:{marselCrushed:true},next:'ch5_vasilisa'} ] },
+
+  ch5_vasilisa:{ loc:'КОРИДОР · ПОЗДНО', emoji:'💞', tag:'Василиса', img:'ch5_03_marsel_vasilisa.jpg', video:'vid_ch5_corridor.mp4', vtype:'tap',
+    cam:{video:'vid_cam_16.mp4', flag:'sawCam16', cap:'Камера засекла: Марсель и Василиса ужинают вдвоём при свечах далеко от офиса. Это уже не про работу — между твоими топами настоящий роман.'},
+    title:'Тайна двоих',
+    text:'Ты случайно застаёшь Марселя и Василису вместе — между ними явно не только прошлое. Роман двух ключевых топов может стать и силой, и бомбой. Как поступишь?',
+    choices:[
+      {label:'Благословить — пусть будут счастливы.',sub:'Человечность',fx:{soul:+6,mor:+4},rel:{vasilisa:+3,marsel:+3},set:{blessRomance:true,romanceMV:true},next:'ch5_doubt'},
+      {label:'Сделать вид, что не заметил.',sub:'Не лезть',fx:{soul:+1},set:{romanceMV:true},next:'ch5_doubt'},
+      {label:'Запретить: «Личное мешает делу».',sub:'Холодный расчёт',fx:{cap:+3,soul:-6,mor:-4},rel:{vasilisa:-4,marsel:-3},set:{banRomance:true},next:'ch5_doubt'} ] },
+
+  ch5_doubt:{ loc:'ТЁМНЫЙ ОФИС · НОЧЬ', emoji:'🌃', tag:'Развилка', img:'ch5_04_doubt.jpg',
+    cam:{video:'vid_cam_01.mp4', flag:'sawCam01', cap:'Камера: Марсель и Василиса на миг замирают ближе, чем коллеги. Между ними — старая, так и не погасшая искра.'},
+    title:'Ночь без сна',
+    text:'Один на один с городом за стеклом ты чувствуешь: это точка невозврата. Каким боссом ты станешь дальше — решается сегодня.',
+    choices:[
+      {label:'Клятва: люди — не расходник.',sub:'Путь души (закрывает «Империю»)',fx:{soul:+9,mor:+6,cap:-4},set:{vowSoul:true},next:'ch5_week'},
+      {label:'Клятва: победа любой ценой.',sub:'Путь силы (закрывает «Тёплый дом»)',fx:{cap:+10,rep:+5,soul:-9},set:{vowPower:true},next:'ch5_week'},
+      {label:'Не зарекаться — плыть по ситуации.',sub:'Канатоходец',fx:{rep:+2},set:{vowNone:true},next:'ch5_week'} ] },
+
+  ch5_week:{ loc:'КАБИНЕТ · СЕЙФ', emoji:'🔐', tag:'Сейф', img:'ch5_05_safe.jpg',
+    title:'Шифр сейфа',
+    text:'Условия сделки заперты в сейфе Барона — он оставил тебе только подсказки к коду. Вскрой его прежде, чем истечёт срок предложения.',
+    choices:[{label:'Подобрать код →',sub:'Дедукция под таймер',puzzle:'safe'}] },
+
+  /* ===================== ГЛАВА 6 · Бунт зреет ===================== */
+  ch6_intro:{ loc:'КОРПОРАЦИЯ · СТАДИЯ 3', emoji:'🔥', tag:'Феликс', img:'ch6_01_felix.jpg', video:'vid_ch6_felix.mp4', vtype:'tap',
+    cam:{video:'vid_cam_08.mp4', flag:'sawCam08', cap:'Камера: Феликс собирает молодых в углу — «Старики боятся, а мы нет. Со мной?». Он сколачивает свою фракцию прямо у тебя под носом.'},
+    title:'Бунт зреет',
+    text:'Компания выросла в корпорацию — и Феликс почувствовал силу. Он открыто спорит с тобой на планёрке, за ним тянется молодёжь. Ставки на лидерство растут.',
+    choices:[
+      {label:'Дать Феликсу больше власти.',sub:'Приручить амбицию',fx:{cap:+7,rep:+3,soul:-3},rel:{felix:+4,vasilisa:-2},set:{gaveFelix:true},next:'ch6_split'},
+      {label:'Поставить его на место при всех.',sub:'Показать, кто босс',fx:{rep:+2,mor:-3},rel:{felix:-5},set:{crushedFelix:true},next:'ch6_split'},
+      {label:'Поговорить один на один, по-честному.',sub:'Наставник',fx:{soul:+5,mor:+3},rel:{felix:+1},set:{mentoredFelix:true},next:'ch6_split'} ] },
+
+  ch6_split:{ loc:'ОПЕНСПЕЙС · РАСКОЛ', emoji:'⚔️', tag:'Раскол', img:'ch6_02_split.jpg',
+    cam:{video:'vid_cam_13.mp4', flag:'sawCam13', cap:'Камера: Феликс за твоей спиной закатывает глаза и едко шепчет своим. Его лояльность — только на словах.'},
+    title:'Два лагеря',
+    text:'Офис расколот: одни за старую гвардию Василисы, другие — за молодых Феликса. Каждый смотрит, чью сторону примешь ты.',
+    choices:[
+      {label:'Опереться на опытную Василису.',sub:'Стабильность',fx:{rep:+4,cap:+2},rel:{vasilisa:+4,felix:-3},set:{sideVasilisa:true},next:'ch6_baron'},
+      {label:'Сделать ставку на молодых.',sub:'Кровь и драйв',fx:{cap:+5,soul:-2},rel:{felix:+3,vasilisa:-4},set:{sideFelix:true},next:'ch6_baron'},
+      {label:'Держать обе стороны в балансе.',sub:'Канатоходец',fx:{soul:+3,rep:+1},set:{sideBalance:true},next:'ch6_baron'} ] },
+
+  ch6_baron:{ loc:'КАБИНЕТ БАРОНА', emoji:'🎩', tag:'Барон', img:'ch6_03_baron.jpg',
+    cam:{video:'vid_cam_12.mp4', flag:'sawCam12', cap:'Камера подсмотрела секрет Барона: он хранит папку с грехами компании прошлых лет. У основателя есть свои скелеты — и он знает про тебя больше, чем говорит.'},
+    title:'Совет основателя',
+    text:'Барон приходит с виски и тихой мудростью: «Бунт — не про Феликса. Он про то, верят ли в тебя. Реши, кем ты хочешь остаться в их памяти».',
+    choices:[
+      {label:'Прислушаться и обнять команду.',sub:'+доверие',fx:{soul:+6,mor:+5},rel:{baron:+3,murka:+2},set:{heedBaron:true},next:'ch6_meeting'},
+      {label:'Поблагодарить, но идти своим путём.',sub:'Своя воля',fx:{rep:+2},rel:{baron:-1},next:'ch6_meeting'},
+      {label:'Отмахнуться: «Ваше время прошло».',sub:'Сжечь мост',fx:{cap:+2,soul:-5},rel:{baron:-5},set:{spurnedBaron:true},next:'ch6_meeting'} ] },
+
+  ch6_meeting:{ loc:'ПЕРЕГОВОРКА · НОЧЬ', emoji:'🕯️', tag:'Заговор', img:'ch6_04_secret_meeting.jpg', video:'vid_ch6_tension.mp4', vtype:'loop',
+    cam:{video:'vid_cam_23.mp4', flag:'sawCam23', cap:'Камера: Феликс с ядром своих чертит план на доске и стирает при звуке шагов. Переворот зреет всерьёз — вопрос лишь, когда.'},
+    title:'Тайная сходка',
+    text:'Тебе доносят: сегодня ночью в переговорке собираются «недовольные». Клубок интриг затягивается — пора распутать, кто дёргает за нити.',
+    choices:[{label:'Разобраться в схеме заговора →',sub:'Найти зачинщика',puzzle:'maze'}] },
+
+  /* ===================== ГЛАВА 7 · Предательство ===================== */
+  ch7_intro:{ loc:'КРИЗИСНОЕ СОВЕЩАНИЕ', emoji:'🎯', tag:'Разоблачение', img:'ch7_01_reveal.jpg',
+    cam:{video:'vid_cam_24.mp4', flag:'sawCam24', cap:'Камера засекла крота за передачей данных наружу. Лицо в тени — но теперь ясно: утечка идёт изнутри, и это кто-то из своих.'},
+    title:'Предательство',
+    text:'Тиша выводит на экран улику: крот всё это время был внутри. В зале — шок. Все ждут, что ты сделаешь с предателем.',
+    choices:[
+      {label:'Публично разоблачить и уволить.',sub:'Жёстко и показательно',fx:{rep:+6,mor:-4,soul:-3},rel:{tisha:+2},set:{publicPurge:true},next:'ch7_bagira'},
+      {label:'Разобраться тихо, без крови.',sub:'Сохранить лицо компании',fx:{soul:+4,rep:+2},rel:{vasilisa:+2},set:{quietPurge:true},next:'ch7_bagira'},
+      {label:'Дать предателю второй шанс.',sub:'Милосердие или слабость',fx:{soul:+6,rep:-5},rel:{murka:+2,felix:-2},set:{spareMole:true},next:'ch7_bagira'} ] },
+
+  ch7_bagira:{ loc:'СТЕКЛЯННЫЙ КАБИНЕТ', emoji:'🖤', tag:'Багира', img:'ch7_02_bagira.jpg', video:'vid_ch7_bagira.mp4', vtype:'tap',
+    cam:{video:'vid_cam_19.mp4', flag:'sawCam19', cap:'Камера: Багира подбрасывает улику в стол Феликса и довольно усмехается. Кто-то станет её козлом отпущения — и это не она.'},
+    title:'Ход Багиры',
+    text:'Багира наносит удар: у неё компромат, способный обрушить и тебя, и половину совета. «Мы можем договориться. Или можем воевать. Выбирай».',
+    choices:[
+      {label:'Ударить первым — сорвать ей маску.',sub:'Ты знаешь про подставу Феликса',fx:{rep:+5,soul:+2},rel:{bagira:-6,felix:+2},set:{exposeBagira:true},if:'sawCam19',next:'ch7_leave'},
+      {label:'Пойти на сделку с ней.',sub:'Грязно, но выживешь',fx:{cap:+8,soul:-9,rep:-3},rel:{bagira:+3},set:{dealBagira:true},next:'ch7_leave'},
+      {label:'Воевать в открытую, без гарантий.',sub:'Принципы против компромата',fx:{soul:+6,rep:-4},rel:{bagira:-5},set:{warBagira:true},next:'ch7_leave'} ] },
+
+  ch7_leave:{ loc:'КОРИДОР · ПРОЩАНИЕ', emoji:'📦', tag:'Уход', img:'ch7_03_leave.jpg', video:'vid_ch7_leave.mp4', vtype:'loop',
+    cam:{video:'vid_cam_04.mp4', flag:'sawCam04', cap:'Камера: Багира глубокой ночью листает чужие папки и фотографирует документы. Она давно собирала компромат — терпеливо и на всех сразу.'},
+    title:'Кто-то уходит',
+    text:'Цена этой недели — живой человек. Один из твоих собирает коробку и идёт к выходу. Ты можешь остановить его — или отпустить.',
+    choices:[
+      {label:'Догнать и удержать любой ценой.',sub:'Никого не бросаю',fx:{cap:-5,mor:+7,soul:+6},rel:{murka:+2,grisha:+2},set:{keptEveryone:true},next:'ch7_week'},
+      {label:'Отпустить с достоинством.',sub:'Тёплое прощание',fx:{soul:+3,mor:+1},set:{lostOne:true},next:'ch7_week'},
+      {label:'Пусть уходит — слабым не место.',sub:'Холод',fx:{cap:+3,mor:-6,soul:-5},rel:{murka:-3},set:{coldFarewell:true,lostOne:true},next:'ch7_week'} ] },
+
+  ch7_week:{ loc:'СЕРВЕРНАЯ · АУДИТ-СЕТКА', emoji:'🧮', tag:'Аудит', img:'ch7_05_grid.jpg',
+    title:'Аудит-сетка',
+    text:'Чтобы закрыть дыру навсегда, надо перекрёстно свести журналы: кто, когда и к чему тянулся. Найди в сетке единственный след, что выдаёт сообщника крота.',
+    choices:[{label:'Открыть аудит-сетку →',sub:'Свести улики',puzzle:'grid'}] },
+
+  /* ===================== ГЛАВА 8 · На грани ===================== */
+  ch8_intro:{ loc:'ВАР-РУМ · CRITICAL', emoji:'🚨', tag:'Кризис', img:'ch8_01_crisis.jpg', video:'vid_ch8_crisis.mp4', vtype:'loop',
+    cam:{video:'vid_cam_17.mp4', flag:'sawCam17', cap:'Камера: Тиша молча встал между Соней и тем, кто повысил на неё голос. Тихий гений умеет быть щитом — когда дело касается её.'},
+    title:'На грани',
+    text:'Всё сходится в одну ночь: графики рушатся, инвестор давит, конкурент почуял кровь. «Девять» на грани. Нужен ход — ва-банк.',
+    choices:[
+      {label:'Резать косты по-живому.',sub:'+касса, −люди',fx:{cap:+10,mor:-8,soul:-5},rel:{murka:-2,grisha:-2},set:{deepCuts:true},next:'ch8_romance'},
+      {label:'Сплотить команду и держать удар вместе.',sub:'−касса, +дух',fx:{cap:-5,mor:+9,soul:+6},rel:{vasilisa:+2,murka:+2},set:{rallyTeam:true},next:'ch8_romance'},
+      {label:'Рискнуть всем на один большой контракт.',sub:'Орёл или решка',fx:{rep:+4,soul:-2},set:{betBig:true},next:'ch8_romance'} ] },
+
+  ch8_romance:{ loc:'У ОКНА · ТИХИЙ МИГ', emoji:'💗', tag:'Тиша и Соня', img:'ch8_02_romance.jpg',
+    cam:{video:'vid_cam_22.mp4', flag:'sawCam22', cap:'Камера подсмотрела первый несмелый поцелуй Тиши и Сони у серверной. Посреди хаоса между ними — по-настоящему.'},
+    title:'Свет посреди бури',
+    text:'В разгар аврала Тиша и Соня находят тихий угол и минуту тепла. Это хрупко — и очень человечно. Заметишь ли ты живых людей за цифрами?',
+    choices:[
+      {label:'По-тихому поддержать их.',sub:'Пусть будет свет',fx:{soul:+7,mor:+5},rel:{tisha:+3,sonya:+3},set:{romanceTS:true,blessTS:true},next:'ch8_nego'},
+      {label:'Не вмешиваться — их дело.',sub:'Уважение',fx:{soul:+2},set:{romanceTS:true},next:'ch8_nego'},
+      {label:'Осадить: «Не на работе».',sub:'Сушь',fx:{cap:+1,soul:-5,mor:-3},rel:{tisha:-3,sonya:-3},set:{banTS:true},next:'ch8_nego'} ] },
+
+  ch8_nego:{ loc:'ПЕРЕГОВОРНЫЙ СТОЛ · НОЧЬ', emoji:'🤝', tag:'Ва-банк', img:'ch8_03_negotiation.jpg', video:'vid_ch8_partner.mp4', vtype:'tap',
+    cam:{video:'vid_cam_15.mp4', flag:'sawCam15', cap:'Камера: Клео тайком встречается с кем-то из чужой команды и передаёт конверт. Её блеск скрывает собственную игру — на чьей она стороне?'},
+    title:'Решающая сделка',
+    text:'Оппонент прижал тебя к стене: одна ошибка — и от «Девять» ничего не останется. Пора за стол — жёстче, чем когда-либо.',
+    choices:[{label:'Сесть за стол ва-банк →',sub:'Переговоры на грани',puzzle:'nego2'}] },
+
+  /* ===================== ГЛАВА 9 · Расплата ===================== */
+  ch9_intro:{ loc:'ГАЛЕРЕЯ ДОСТИЖЕНИЙ', emoji:'⚖️', tag:'Расплата', img:'ch9_01_consequences.jpg', video:'vid_ch9_reckoning.mp4', vtype:'loop',
+    cam:{video:'vid_cam_21.mp4', flag:'sawCam21', cap:'Камера: Василиса и Багира тихо жмут руки в тёмной переговорке. Две сильнейшие женщины офиса о чём-то договорились — вопрос лишь, против кого.'},
+    title:'Всё возвращается',
+    text:'Барон ведёт тебя вдоль стены с вехами компании: «Каждое твоё решение оставило след. Сегодня они все возвращаются за ответом». Пора держать его.',
+    choices:[
+      {label:'Принять всё, что сделал — и хорошее, и грязь.',sub:'Честность с собой',fx:{soul:+7,rep:+2},rel:{baron:+2},set:{ownedIt:true},next:'ch9_emotional'},
+      {label:'Оправдать себя результатом.',sub:'Цель оправдала средства',fx:{cap:+3,soul:-4},set:{justified:true},next:'ch9_emotional'},
+      {label:'Свалить вину на обстоятельства.',sub:'Не моя вина',fx:{soul:-6},rel:{baron:-2,sonya:-2},set:{blameShift:true},next:'ch9_emotional'} ] },
+
+  ch9_emotional:{ loc:'КАБИНЕТ · РАЗБОР', emoji:'💔', tag:'Клео', img:'ch9_02_emotional.jpg',
+    cam:{video:'vid_cam_26.mp4', flag:'sawCam26', cap:'Камера: Клео стирает макияж и смотрит в зеркало на настоящую себя — без фильтров и блеска. Она устала быть витриной.'},
+    title:'Счёт от своих',
+    text:'Клео срывается: «Ты использовал моё лицо, мой хайп — а меня саму хоть раз спросил?». За месяцы накопилось у многих. Что ответишь?',
+    choices:[
+      {label:'Искренне извиниться и услышать.',sub:'+душа, +люди',fx:{soul:+7,mor:+4},rel:{cleo:+4,murka:+2},set:{madeAmends:true},next:'ch9_team'},
+      {label:'Признать вину, но напомнить о деле.',sub:'Баланс',fx:{soul:+2,rep:+1},rel:{cleo:+1},next:'ch9_team'},
+      {label:'Отрезать: «Бизнес не про чувства».',sub:'Лёд',fx:{cap:+2,soul:-7},rel:{cleo:-5},set:{coldToCleo:true},next:'ch9_team'} ] },
+
+  ch9_team:{ loc:'АТРИУМ · КОМАНДА', emoji:'👥', tag:'Команда', img:'ch9_04_team.jpg',
+    cam:{video:'vid_cam_27.mp4', flag:'sawCam27', cap:'Камера: команда разбилась на два лагеря — одни за тебя горой, другие точат ножи. Скоро выбор станет их, а не твоим.'},
+    title:'Команда ждёт',
+    text:'Ключевые люди собрались и смотрят на тебя. Через неделю решится судьба «Девять» — и они хотят знать, за кем идти. Что ты им дашь?',
+    choices:[
+      {label:'Честную правду и общий план.',sub:'Доверие',fx:{soul:+5,mor:+6,rep:+2},rel:{vasilisa:+2,murka:+2,grisha:+1},set:{gaveTruth:true},next:'ch9_week'},
+      {label:'Вдохновляющую, но полуправду.',sub:'Пиар',fx:{rep:+4,soul:-2},rel:{cleo:+1},set:{gaveSpin:true},next:'ch9_week'},
+      {label:'Приказ без объяснений.',sub:'Власть',fx:{cap:+2,mor:-5,soul:-3},rel:{felix:-1},set:{gaveOrders:true},next:'ch9_week'} ] },
+
+  ch9_week:{ loc:'КАБИНЕТ · ВЕСЫ', emoji:'⚖️', tag:'Весы', img:'ch9_05_scales.jpg',
+    title:'Весы решений',
+    text:'Перед финалом — последний холодный расчёт. На одной чаше прибыль, на другой — люди и душа компании. Найди баланс, с которым сможешь жить.',
+    choices:[{label:'Взвесить решения →',sub:'Прибыль против души',puzzle:'scales'}] },
+
+  /* ===================== ГЛАВА 10 · Кто поведёт (финал) ===================== */
+  ch10_intro:{ loc:'БОРДРУМ · СОВЕТ', emoji:'👑', tag:'Финал', img:'ch10_01_council.jpg', video:'vid_ch9_baron.mp4', vtype:'tap',
+    cam:{video:'vid_cam_28.mp4', flag:'sawCam28', cap:'Камера раскрыла истинный мотив Багиры: за всеми интригами — не жадность, а старая рана и месть. Теперь ты видишь её насквозь.'},
+    title:'Кто поведёт «Девять»',
+    text:'Совет в сборе. Все линии сошлись: инвестор, Феликс, Багира, команда — все ждут твоего последнего слова о будущем компании.',
+    choices:[
+      {label:'Оставить компанию людям и себе.',sub:'Курс на душу',fx:{soul:+6,mor:+4},set:{finalSoul:true},next:'ch10_key'},
+      {label:'Отдать штурвал сильнейшему ради роста.',sub:'Курс на власть',fx:{cap:+6,rep:+3,soul:-4},set:{finalPower:true},next:'ch10_key'},
+      {label:'Ещё не решил — пусть решит финал.',sub:'Открытый путь',fx:{rep:+1},next:'ch10_key'} ] },
+
+  ch10_key:{ loc:'БОРДРУМ · КЛЮЧ', emoji:'🗝️', tag:'Барон', img:'ch10_02_key.jpg', video:'vid_ch10_baron.mp4', vtype:'tap',
+    cam:{video:'vid_cam_29.mp4', flag:'sawCam29', cap:'Камера: Барон пишет тебе письмо-завещание и прячет в сейф: «Если читаешь это — значит, пора». Он всё решил про тебя давно.'},
+    title:'Передача ключа',
+    text:'Барон кладёт тебе в ладонь золотой ключ от «Девять»: «Компания теперь твоя. Помни — за каждой цифрой стоит живой кот». Остался один, последний выбор.',
+    choices:[
+      {label:'Принять ключ и всё, что с ним.',sub:'Твоя ответственность',fx:{soul:+3},rel:{baron:+2},set:{tookKey:true},next:'ch10_final'},
+      {label:'Принять — и мысленно уже отпустить.',sub:'Устал, как когда-то Барон',fx:{soul:+1,mor:-1},set:{wearyKey:true},next:'ch10_final'} ] },
+
+  ch10_final:{ loc:'БОРДРУМ · РАССВЕТ', emoji:'🌅', tag:'Развязка', img:'ch10_03_choice.jpg', video:'vid_ch10_ending.mp4', vtype:'loop',
+    cam:{video:'vid_cam_30.mp4', flag:'sawCam30', cap:'Камера сводит всё воедино: каждый в офисе занял свою сторону. Финал близко — и он будет полностью твоим.'},
+    title:'Последнее слово',
+    text:'Рассвет над Котополисом. Пустой бордрум, золотой ключ в руке и вся история за спиной. Каким боссом ты вошёл в этот кабинет — таким его и покинешь.',
+    choices:[{label:'Произнести финальное решение →',sub:'Узнать свою концовку',puzzle:'finale'}] }
 };
 
 /* Карта глав: weekNum → стартовое событие. 3–7 добавим по мере наполнения. */
-const CHAPTERS={ 1:{start:'intro'}, 2:{start:'ch2_intro'}, 3:{start:'ch3_intro'} };
-const MAX_CHAPTER=3;
+const CHAPTERS={ 1:{start:'intro'}, 2:{start:'ch2_intro'}, 3:{start:'ch3_intro'},
+  4:{start:'ch4_intro'}, 5:{start:'ch5_intro'}, 6:{start:'ch6_intro'}, 7:{start:'ch7_intro'},
+  8:{start:'ch8_intro'}, 9:{start:'ch9_intro'}, 10:{start:'ch10_intro'} };
+const MAX_CHAPTER=10;
 
 /* ===== Движок ===== */
 const SAVE_KEY='devyat9_slice_save';
@@ -332,6 +567,46 @@ function consequenceLines(){
     if(f.scandalSpin) L.push('🎭 Ты обратил скандал в пиар — цинично, но охваты и касса выросли.');
     if(f.fullAudit) L.push('👁️ Тотальный аудит логов ловит крота — и подтачивает доверие в офисе.');
     if(f.dropHunt) L.push('🚪 Ты свернул охоту — крот остался внутри. Бомба замедленного действия.');
+  } else if(w===4){
+    if(f.careProgram) L.push('🧡 Ты ввёл заботу о команде — выгорание отступило, люди дышат.');
+    if(f.ignoredBurnout) L.push('🔥 Ты отмахнулся от выгорания — лучшие уже поглядывают на выход.');
+    if(f.grishaSaved) L.push('📦 Ты отправил Гришу к семье — он вернулся с новой силой и преданностью.');
+    if(f.grishaBroken) L.push('💔 Ты выжал Гришу до конца — он держится на честном слове.');
+    if(f.autoWarehouse) L.push('🤖 Склад автоматизирован — быстро и дёшево, но люди напряглись.');
+    if(f.hiredShark) L.push('🦈 Ты взял скандальную звезду — талант есть, мир в офисе под вопросом.');
+    if(f.hiredTeam) L.push('🤝 Ты взял командного игрока — культура крепнет.');
+  } else if(w===5){
+    if(f.tookInvestor) L.push('💼 Ты впустил инвестора на его условиях — деньги пришли, свобода ушла.');
+    if(f.refusedInvestor) L.push('🕊️ Ты отказал инвестору — растёшь на свои, но медленнее.');
+    if(f.romanceMV) L.push('💞 Роман Марселя и Василисы вышел из тени — сила это или трещина, покажет время.');
+    if(f.banRomance) L.push('🚫 Ты запретил их роман — двое ключевых топов затаили обиду.');
+    if(f.vowSoul) L.push('🔮 Ты поклялся: люди — не расходник. Путь души выбран.');
+    if(f.vowPower) L.push('⚡ Ты поклялся: победа любой ценой. Путь силы выбран.');
+  } else if(w===6){
+    if(f.gaveFelix) L.push('🚀 Ты дал Феликсу власть — приручил амбицию или вырастил соперника.');
+    if(f.crushedFelix) L.push('⚔️ Ты осадил Феликса при всех — послушен внешне, опасен внутри.');
+    if(f.mentoredFelix) L.push('🧭 Ты стал Феликсу наставником — ставка на доверие.');
+    if(f.sideVasilisa) L.push('🛡️ Ты сделал ставку на старую гвардию — стабильность против драйва.');
+    if(f.sideFelix) L.push('🔥 Ты сделал ставку на молодых — драйв против опыта.');
+    if(f.spurnedBaron) L.push('🎩 Ты отмахнулся от Барона — сжёг мост с основателем.');
+  } else if(w===7){
+    if(f.publicPurge) L.push('🎯 Ты показательно казнил предателя — дисциплина ценой страха.');
+    if(f.spareMole) L.push('🤍 Ты пощадил крота — милосердие, которое сочли слабостью.');
+    if(f.exposeBagira) L.push('🖤 Ты сорвал маску с Багиры — умный враг повержен.');
+    if(f.dealBagira) L.push('🤝 Ты пошёл на сделку с Багирой — выжил, но теперь ей должен.');
+    if(f.keptEveryone) L.push('🫂 Ты не дал уйти никому — команда это запомнила.');
+    if(f.coldFarewell) L.push('🧊 Ты холодно отпустил уходящего — осадок у всех.');
+  } else if(w===8){
+    if(f.deepCuts) L.push('✂️ Ты резал косты по-живому — касса спасена, люди в шоке.');
+    if(f.rallyTeam) L.push('🔥 Ты сплотил команду против кризиса — дух крепче стали.');
+    if(f.romanceTS) L.push('💗 Роман Тиши и Сони расцвёл — свет посреди бури.');
+    if(f.banTS) L.push('🚫 Ты запретил Тише и Соне — погасил редкий тёплый огонёк.');
+  } else if(w===9){
+    if(f.madeAmends) L.push('🙏 Ты повинился перед своими — многое прощено.');
+    if(f.coldToCleo) L.push('🧊 Ты отрезал Клео — «бизнес не про чувства» дорого стоит.');
+    if(f.gaveTruth) L.push('🕯️ Ты дал команде честную правду — за таким идут.');
+    if(f.gaveOrders) L.push('📢 Ты дал приказ без объяснений — власть без доверия.');
+    if(f.balanced) L.push('⚖️ Ты нашёл баланс прибыли и души — редкая мудрость.');
   }
   if(f.puzzleLine) L.push(f.puzzleLine);
   if(!L.length) L.push('Ты прошёл неделю осторожно, не качнув ни одну чашу весов. Иногда это тоже выбор.');
@@ -386,7 +661,14 @@ function setAlloc(i,d){
 }
 function startPuzzle(name){
   if(name==='nego') return startNego();
+  if(name==='nego2') return startNego(true);
   if(name==='anomaly') return startAnomaly();
+  if(name==='grid') return startAnomaly('grid');
+  if(name==='shifts') return startShifts();
+  if(name==='safe') return startSafe();
+  if(name==='maze') return startMaze();
+  if(name==='scales') return startScales();
+  if(name==='finale') return startFinale();
   return startBudget();
 }
 function startBudget(){
@@ -395,8 +677,9 @@ function startBudget(){
 }
 
 /* ===== Головоломка №2: «Переговоры» (тактика: куш vs терпение) ===== */
-function startNego(){
-  state.nego={ profit:0, patience:80, rounds:0, maxRounds:6, timeLeft:40, reveal:false, lastTxt:'' };
+function startNego(hard){
+  const h=!!hard;
+  state.nego={ profit:0, patience:h?62:80, rounds:0, maxRounds:h?5:6, timeLeft:h?32:40, reveal:false, lastTxt:'', hard:h };
   renderNego(); show('screen-puzzle'); startNegoTimer();
 }
 function startNegoTimer(){
@@ -528,8 +811,8 @@ function submitPuzzle(force){
     </div>`;
 }
 
-/* ===== Головоломка №3: «Найди аномалию» (аудит доступов) ===== */
-function startAnomaly(){
+/* ===== Головоломка «Найди аномалию» (аудит доступов; mode: audit / grid) ===== */
+function startAnomaly(mode){
   const staff=[
     {name:'Логистика · Р. Ковач',  own:'маршруты доставки'},
     {name:'Бухгалтерия · Л. Дейн',  own:'платёжные ведомости'},
@@ -549,7 +832,7 @@ function startAnomaly(){
     const night=(i===mole||i===dNight), foreign=(i===mole||i===dForeign), big=(i===mole||i===dBig);
     return { name:s.name, time:night?pick(nightT):pick(dayT), target:foreign?'клиентская база':s.own, vol:big?pick(bigV):pick(normV), cleared:false };
   });
-  state.anomaly={ rows, answer:mole, picked:null, timeLeft:35, done:false };
+  state.anomaly={ rows, answer:mole, picked:null, timeLeft:(mode==='grid'?30:35), done:false, mode:(mode||'audit') };
   renderAnomaly(); show('screen-puzzle'); startAnomalyTimer();
 }
 function startAnomalyTimer(){
@@ -577,11 +860,12 @@ function renderAnomaly(){
       <div class="anom-who">${r.name}${r.cleared?' · <span class="anom-ok">✓ чисто</span>':''}</div>
       <div class="anom-chips"><span>🕐 ${r.time}</span><span>📂 ${r.target}</span><span>📦 ${r.vol}</span></div>
     </button>`).join('');
+  const grid=a.mode==='grid';
   $('screen-puzzle').innerHTML=`<div class="pz-wrap">
-      <div class="end-kicker">Задача недели · аудит доступов</div>
+      <div class="end-kicker">Задача недели · ${grid?'аудит-сетка':'аудит доступов'}</div>
       <div class="pz-timer ${a.timeLeft<=6?'low':''}" id="pz-timer">${a.timeLeft} с</div>
-      <h2>🔎 Найди крота</h2>
-      <p>Крот выдаёт себя <b>тремя признаками разом</b>: вход <b>ночью</b>, доступ к <b>чужим данным</b> (клиентская база) и <b>аномальный объём</b>. У остальных сходится максимум один. Вычисли и ткни.</p>
+      <h2>${grid?'🧮 Найди сообщника':'🔎 Найди крота'}</h2>
+      <p>${grid?'Сообщник крота выдаёт себя <b>тремя признаками разом</b>':'Крот выдаёт себя <b>тремя признаками разом</b>'}: вход <b>ночью</b>, доступ к <b>чужим данным</b> (клиентская база) и <b>аномальный объём</b>. У остальных сходится максимум один. Вычисли и ткни.</p>
       ${rows}
       <button class="btn" style="min-width:230px;margin:10px 0;" onclick="anomalyHint()">💡 Исключить одного (реклама)</button>
     </div>`;
@@ -589,26 +873,243 @@ function renderAnomaly(){
 function anomalyResult(pick,timeout){
   clearInterval(pzTimer);
   const a=state.anomaly; a.done=true; a.picked=pick;
+  const grid=a.mode==='grid', who=grid?'сообщника':'крота';
   const correct=(pick===a.answer), fast=a.timeLeft>=15;
   let tier,fx,msg;
-  if(correct && fast){ tier='Блестяще'; fx={rep:8,soul:3}; msg='Ты вычислил крота мгновенно: ночной вход, чужая база, гигабайты наружу. Утечку перекрыли, данные спасли.'; state.flags.moleCaught=true; }
-  else if(correct){ tier='Норма'; fx={rep:4}; msg='Ты нашёл крота — но пока думал, часть базы уже утекла. Дыру закрыли, осадок остался.'; state.flags.moleCaught=true; }
-  else { tier='Провал'; fx={rep:-6,soul:-2}; msg=timeout?'Время вышло — крот успел уйти вместе с базой. Утечка не раскрыта.':'Ты указал не на того. Настоящий крот тихо ушёл, прихватив клиентов.'; state.flags.moleEscaped=true; }
+  if(correct && fast){ tier='Блестяще'; fx={rep:8,soul:3}; msg=`Ты вычислил ${who} мгновенно: ночной вход, чужая база, гигабайты наружу. Дыру перекрыли, данные спасли.`; state.flags.moleCaught=true; }
+  else if(correct){ tier='Норма'; fx={rep:4}; msg=`Ты нашёл ${who} — но пока думал, часть базы уже утекла. Дыру закрыли, осадок остался.`; state.flags.moleCaught=true; }
+  else { tier='Провал'; fx={rep:-6,soul:-2}; msg=timeout?`Время вышло — ${who} успел уйти вместе с базой. Дыру не закрыли.`:`Ты указал не на того. Настоящий ${who} тихо ушёл, прихватив данные.`; state.flags.moleEscaped=true; }
   if(tier==='Провал') SFX.bad(); else SFX.good();
   for(const k in fx) state.m[k]=clamp(state.m[k]+fx[k]);
   renderMetrics();
-  state.flags.puzzleLine='🔎 Аудит доступов — '+tier+': '+msg;
+  state.flags.puzzleLine=(grid?'🧮 Аудит-сетка — ':'🔎 Аудит доступов — ')+tier+': '+msg;
   const icon=tier==='Блестяще'?'🏆':tier==='Норма'?'👍':'⚠️';
   const win=a.rows[a.answer];
-  const reveal=`Крот был: <b>${win.name}</b> — ${win.time} · клиентская база · ${win.vol}.`;
+  const reveal=`${grid?'Сообщник':'Крот'} был: <b>${win.name}</b> — ${win.time} · клиентская база · ${win.vol}.`;
   $('screen-puzzle').innerHTML=`<div class="pz-wrap">
       <div class="end-kicker">Результат — ${tier}</div>
-      <h2>${icon} Найди крота</h2>
+      <h2>${icon} Найди ${who}</h2>
       <p>${msg}</p>
       <div class="anom-reveal">${reveal}</div>
       <div class="stat-row">${Object.keys(fx).map(k=>`${METRIC_NAMES[k]} ${fx[k]>0?'+':''}${fx[k]}`).join(' · ')}</div>
       <button class="btn btn-primary" style="min-width:230px;" onclick="endSlice()">Дальше → итоги недели</button>
     </div>`;
+}
+
+/* ===== helper ===== */
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ===== Головоломка «Собери смену» (гл.4) — раскидай смены по дням ===== */
+function startShifts(){
+  const DAYS=['Пн','Вт','Ср','Чт','Пт']; const TOTAL=12;
+  let raw=DAYS.map(()=>1+Math.floor(Math.random()*4)), s=raw.reduce((a,b)=>a+b,0);
+  let need=raw.map(w=>Math.max(1,Math.round(TOTAL*w/s)));
+  let diff=TOTAL-need.reduce((a,b)=>a+b,0); need[0]+=diff; if(need[0]<1){ need[1]+=need[0]-1; need[0]=1; }
+  state.shifts={ days:DAYS, need, alloc:DAYS.map(()=>0), reveal:DAYS.map(()=>false), total:TOTAL, timeLeft:30, done:false };
+  renderShifts(); show('screen-puzzle'); startSimpleTimer('shifts',()=>submitShifts(true));
+}
+function shiftsSum(){ return state.shifts.alloc.reduce((a,b)=>a+b,0); }
+function setShift(i,d){ const p=state.shifts; if(p.done)return; let v=p.alloc[i]+d; if(v<0)v=0; if(shiftsSum()-p.alloc[i]+v>p.total) v=p.total-(shiftsSum()-p.alloc[i]); p.alloc[i]=v; SFX.step(); renderShifts(); }
+function shiftHint(i){ const p=state.shifts, n=p.need[i]; if(p.reveal[i]) return 'нужно '+n; if(n>=4) return 'аврал — людей много'; if(n<=1) return 'спокойный день'; return 'средняя нагрузка'; }
+function shiftsHintAd(){ Ads.rewarded(()=>{ const p=state.shifts; if(!p||p.done)return; const h=p.reveal.map((r,i)=>r?-1:i).filter(i=>i>=0); if(h.length){ p.reveal[h[Math.floor(Math.random()*h.length)]]=true; renderShifts(); } }); }
+function renderShifts(){
+  const p=state.shifts, rem=p.total-shiftsSum();
+  const rows=p.days.map((d,i)=>`<div class="pz-row"><div class="pz-info"><span class="pz-ic">📅</span><div><div class="pz-name">${d}</div><div class="pz-hint">${shiftHint(i)}</div></div></div>
+    <div class="pz-stepper"><button onclick="setShift(${i},-1)">−</button><span class="pz-val">${p.alloc[i]}</span><button onclick="setShift(${i},1)">+</button></div></div>`).join('');
+  $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Задача недели · график смен</div>
+    <div class="pz-timer ${p.timeLeft<=5?'low':''}" id="pz-timer">${p.timeLeft} с</div>
+    <h2>🗓️ Собери смену</h2><p>Раскидай <b>${p.total}</b> смен по дням — слушай намёки, лови авралы. Нераспределённое = дыры в графике.</p>
+    <div class="pz-budget ${rem===0?'ok':''}">Осталось смен: ${rem} / ${p.total}</div>${rows}
+    <button class="btn" style="min-width:230px;margin:8px 0 10px;" onclick="shiftsHintAd()">💡 Подсказка (реклама)</button>
+    <button class="btn btn-primary" style="min-width:230px;" ${rem===0?'':'disabled'} onclick="submitShifts()">Утвердить график →</button></div>`;
+}
+function submitShifts(force){
+  const p=state.shifts; if(!force && shiftsSum()!==p.total) return; clearInterval(pzTimer); p.done=true;
+  const dev=p.alloc.reduce((a,v,i)=>a+Math.abs(v-p.need[i]),0)+(p.total-shiftsSum());
+  let tier,fx,msg;
+  if(dev<=2){ tier='Блестяще'; fx={mor:7,cap:3}; msg='График лёг идеально — авралы закрыты, никто не перегружен.'; }
+  else if(dev<=6){ tier='Норма'; fx={mor:2}; msg='График сносный — где-то пусто, где-то густо, но команда вывезла.'; }
+  else { tier='Провал'; fx={mor:-6,cap:-3}; msg='Смены вразнобой — авралы, переработки, злые лица.'; state.flags.shiftsFail=true; }
+  simpleResult('🗓️ Смены',tier,fx,msg);
+}
+
+/* ===== Головоломка «Шифр сейфа» (гл.5) — дедукция кода ===== */
+function startSafe(){
+  const pool=shuffle([1,2,3,4,5,6]); const code=pool.slice(0,3);
+  state.safe={ code, guess:[1,2,3], history:[], max:6, timeLeft:70, done:false, revealed:null };
+  renderSafe(); show('screen-puzzle'); startSimpleTimer('safe',()=>safeResult(false,true));
+}
+function safeStep(i,d){ const s=state.safe; if(s.done)return; let v=s.guess[i]+d; if(v<1)v=6; if(v>6)v=1; s.guess[i]=v; SFX.step(); renderSafe(); }
+function safeHint(){ Ads.rewarded(()=>{ const s=state.safe; if(!s||s.done)return; if(s.revealed==null) s.revealed=Math.floor(Math.random()*3); renderSafe(); }); }
+function safeSubmit(){
+  const s=state.safe; if(s.done)return; const g=s.guess.slice(), code=s.code; let green=0,yellow=0;
+  g.forEach((v,i)=>{ if(v===code[i]) green++; else if(code.includes(v)) yellow++; });
+  s.history.push({g:g.slice(), green, yellow});
+  if(green===3){ SFX.good(); return safeResult(true); }
+  if(s.history.length>=s.max){ SFX.bad(); return safeResult(false); }
+  SFX.click(); renderSafe();
+}
+function renderSafe(){
+  const s=state.safe;
+  const slots=s.guess.map((v,i)=>`<div class="safe-slot"><button onclick="safeStep(${i},1)">▲</button><div class="safe-dig ${s.revealed===i?'rev':''}">${v}</div><button onclick="safeStep(${i},-1)">▼</button></div>`).join('');
+  const hist=s.history.map(h=>`<div class="safe-hrow"><span>${h.g.join(' ')}</span><span class="safe-pegs">${'🟢'.repeat(h.green)}${'🟡'.repeat(h.yellow)}${'⚫'.repeat(3-h.green-h.yellow)}</span></div>`).reverse().join('');
+  const rev=s.revealed!=null?`<div class="safe-clue">💡 Позиция ${s.revealed+1} — цифра <b>${s.code[s.revealed]}</b></div>`:'';
+  $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Задача недели · шифр сейфа</div>
+    <div class="pz-timer ${s.timeLeft<=8?'low':''}" id="pz-timer">${s.timeLeft} с</div>
+    <h2>🔐 Шифр сейфа</h2><p>Код — 3 разные цифры (1–6). 🟢 цифра на месте · 🟡 есть, но не там · ⚫ нет. Попыток: <b>${s.history.length}/${s.max}</b>.</p>
+    <div class="safe-slots">${slots}</div>${rev}
+    <button class="btn btn-primary" style="min-width:230px;margin:6px 0 8px;" onclick="safeSubmit()">Проверить код →</button>
+    <button class="btn" style="min-width:230px;margin-bottom:10px;" onclick="safeHint()">💡 Открыть цифру (реклама)</button>
+    <div class="safe-hist">${hist}</div></div>`;
+}
+function safeResult(win,timeout){
+  const s=state.safe; clearInterval(pzTimer); s.done=true;
+  let tier,fx,msg;
+  if(win && s.history.length<=3){ tier='Блестяще'; fx={cap:8,rep:4}; msg='Сейф вскрыт с ходу — условия сделки у тебя раньше срока.'; }
+  else if(win){ tier='Норма'; fx={cap:4,rep:1}; msg='Сейф поддался под конец — сделку успел закрыть впритык.'; }
+  else { tier='Провал'; fx={cap:-5}; msg=timeout?'Время вышло — сейф заперт, предложение сгорело.':'Код не поддался — часть условий утекла к инвестору.'; state.flags.safeFail=true; }
+  simpleResult('🔐 Шифр сейфа',tier,fx,msg,'Код был: <b>'+state.safe.code.join(' ')+'</b>');
+}
+
+/* ===== Головоломка «Лабиринт интриги» (гл.6) — вычисли зачинщика ===== */
+function startMaze(){
+  const people=['Феликс','«Тень» из продаж','Юниор-разработчик','Дерзкий аналитик','Амбициозный стажёр'];
+  const n=people.length, boss=Math.floor(Math.random()*n), others=shuffle([...Array(n).keys()].filter(i=>i!==boss));
+  const dMeet=others[0],dRec=others[1],dMot=others[2];
+  const rows=people.map((nm,i)=>({ name:nm, meet:(i===boss||i===dMeet), rec:(i===boss||i===dRec), mot:(i===boss||i===dMot), cleared:false }));
+  state.maze={ rows, answer:boss, timeLeft:30, done:false };
+  renderMaze(); show('screen-puzzle'); startSimpleTimer('maze',()=>mazeResult(-1,true));
+}
+function mazeHint(){ Ads.rewarded(()=>{ const m=state.maze; if(!m||m.done)return; const d=m.rows.map((r,i)=>i).filter(i=>i!==m.answer && !m.rows[i].cleared); if(d.length){ m.rows[d[Math.floor(Math.random()*d.length)]].cleared=true; renderMaze(); } }); }
+function pickMaze(i){ if(state.maze && !state.maze.done) mazeResult(i,false); }
+function renderMaze(){
+  const m=state.maze;
+  const rows=m.rows.map((r,i)=>`<button class="anom-row ${r.cleared?'cleared':''}" ${r.cleared?'disabled':''} onclick="pickMaze(${i})">
+    <div class="anom-who">${r.name}${r.cleared?' · <span class="anom-ok">✓ вне игры</span>':''}</div>
+    <div class="anom-chips"><span>🕯️ Сходки: ${r.meet?'да':'—'}</span><span>🗣️ Вербует: ${r.rec?'да':'—'}</span><span>🎯 Мотив: ${r.mot?'да':'—'}</span></div></button>`).join('');
+  $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Задача недели · лабиринт интриги</div>
+    <div class="pz-timer ${m.timeLeft<=6?'low':''}" id="pz-timer">${m.timeLeft} с</div>
+    <h2>🕸️ Найди зачинщика</h2><p>Настоящий зачинщик сходится по <b>всем трём</b>: ходит на сходки, вербует людей и имеет мотив. У остальных — максимум два. Вычисли и ткни.</p>
+    ${rows}<button class="btn" style="min-width:230px;margin:10px 0;" onclick="mazeHint()">💡 Исключить одного (реклама)</button></div>`;
+}
+function mazeResult(pick,timeout){
+  const m=state.maze; clearInterval(pzTimer); m.done=true; const correct=(pick===m.answer), fast=m.timeLeft>=12;
+  let tier,fx,msg;
+  if(correct&&fast){ tier='Блестяще'; fx={rep:6,soul:2}; msg='Ты вычислил зачинщика мгновенно — заговор рассыпался, не начавшись.'; state.flags.plotCrushed=true; }
+  else if(correct){ tier='Норма'; fx={rep:3}; msg='Зачинщик найден, но слухи уже пошли по офису.'; state.flags.plotCrushed=true; }
+  else { tier='Провал'; fx={rep:-5,mor:-3}; msg=timeout?'Время вышло — заговор дозрел в тени.':'Ты обвинил невиновного — зачинщик усилился, обиженный ушёл к нему.'; state.flags.plotGrew=true; }
+  simpleResult('🕸️ Лабиринт интриги',tier,fx,msg,'Зачинщик: <b>'+m.rows[m.answer].name+'</b>.');
+}
+
+/* ===== Головоломка «Весы решений» (гл.9) — сбалансируй чаши ===== */
+function startScales(){
+  state.scales={ left:Math.round(state.m.cap/12), right:Math.round(state.m.soul/12), moves:8, timeLeft:30, done:false };
+  renderScales(); show('screen-puzzle'); startSimpleTimer('scales',()=>scalesResult());
+}
+function addWeight(side){ const s=state.scales; if(s.done||s.moves<=0)return; if(side==='left')s.left++; else s.right++; s.moves--; SFX.step(); if(s.moves<=0){ renderScales(); return; } renderScales(); }
+function renderScales(){
+  const s=state.scales, max=Math.max(s.left,s.right,6);
+  const bar=(v,cls)=>`<div class="sc-bar"><i class="${cls}" style="height:${Math.min(100,v/max*100)}%"></i></div>`;
+  const diff=Math.abs(s.left-s.right);
+  $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Задача недели · весы решений</div>
+    <div class="pz-timer ${s.timeLeft<=5?'low':''}" id="pz-timer">${s.timeLeft} с</div>
+    <h2>⚖️ Взвесь решения</h2><p>Приведи чаши <b>к балансу</b> — ни прибыль, ни душа не должны перевесить. Ходов: <b>${s.moves}</b>.</p>
+    <div class="sc-wrap"><div class="sc-col">${bar(s.left,'sc-cap')}<div class="sc-lbl">💰 Прибыль<br><b>${s.left}</b></div><button class="btn" onclick="addWeight('left')">+ прибыль</button></div>
+    <div class="sc-col">${bar(s.right,'sc-soul')}<div class="sc-lbl">🔮 Душа<br><b>${s.right}</b></div><button class="btn" onclick="addWeight('right')">+ душа</button></div></div>
+    <div class="pz-budget ${diff<=1?'ok':''}">Перекос: ${diff}</div>
+    <button class="btn btn-primary" style="min-width:230px;margin-top:8px;" onclick="scalesResult()">Зафиксировать →</button></div>`;
+}
+function scalesResult(){
+  const s=state.scales; clearInterval(pzTimer); s.done=true; const diff=Math.abs(s.left-s.right);
+  let tier,fx,msg;
+  if(diff<=1){ tier='Блестяще'; fx={soul:5,mor:5,rep:2}; msg='Идеальный баланс — ты держишь и цифры, и людей. Мудрый капитан.'; state.flags.balanced=true; }
+  else if(diff<=3){ tier='Норма'; fx={soul:2,mor:1}; msg='Почти ровно — небольшой перекос, но компания устойчива.'; }
+  else { tier='Провал'; fx={mor:-4,soul:-3}; msg='Чаши перекосило — одна сторона задавила другую. Это аукнется в финале.'; state.flags.imbalanced=true; }
+  simpleResult('⚖️ Весы решений',tier,fx,msg);
+}
+
+/* ===== общий таймер и результат простых головоломок ===== */
+function startSimpleTimer(key,onOut){
+  clearInterval(pzTimer);
+  pzTimer=setInterval(()=>{
+    const p=state[key]; if(!p||p.done){ clearInterval(pzTimer); return; }
+    p.timeLeft--; const el=$('pz-timer'); if(el){ el.textContent=p.timeLeft+' с'; if(p.timeLeft<=6) el.classList.add('low'); }
+    if(p.timeLeft<=6 && p.timeLeft>0) SFX.tick();
+    if(p.timeLeft<=0){ clearInterval(pzTimer); onOut(); }
+  },1000);
+}
+function simpleResult(name,tier,fx,msg,extra){
+  if(tier==='Провал') SFX.bad(); else SFX.good();
+  for(const k in fx) state.m[k]=clamp(state.m[k]+fx[k]); renderMetrics();
+  state.flags.puzzleLine=name+' — '+tier+': '+msg;
+  const icon=tier==='Блестяще'?'🏆':tier==='Норма'?'👍':'⚠️';
+  $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Результат — ${tier}</div>
+    <h2>${icon} ${name}</h2><p>${msg}</p>${extra?`<div class="anom-reveal">${extra}</div>`:''}
+    <div class="stat-row">${Object.keys(fx).map(k=>`${METRIC_NAMES[k]} ${fx[k]>0?'+':''}${fx[k]}`).join(' · ')}</div>
+    <button class="btn btn-primary" style="min-width:230px;" onclick="endSlice()">Дальше → итоги недели</button></div>`;
+}
+
+/* ===== ФИНАЛ · 6 концовок + эпилоги ===== */
+function lostCount(){ let n=0; for(const r in state.rel){ if(state.rel[r]<=-3) n++; } const f=state.flags; ['grishaBroken','marselCrushed','coldFarewell','coldToCleo','banRomance','banTS'].forEach(k=>{ if(f[k]) n++; }); return n; }
+function loyalCount(){ let n=0; for(const r in state.rel){ if(state.rel[r]>=3) n++; } return n; }
+function computeEnding(){
+  const m=state.m, f=state.flags, loyal=loyalCount(), lost=lostCount();
+  const felixPath=f.gaveFelix||f.sideFelix||f.felixPlan||f.poaching;
+  if(m.cap<=0||m.rep<=0||m.mor<=0||m.soul<=0||m.cap<25)
+    return {key:'crash', t:'💥 Крах', art:'ch8_01_crisis.jpg',
+      d:'«Девять» не выдержала. Метрики просели в ноль, компания разваливается на глазах, а ты остаёшься на пепелище того, что построил Барон. Иногда амбиции стоят всего.'};
+  if(felixPath && m.mor<45)
+    return {key:'revolution', t:'🔥 Революция', art:'ch6_01_felix.jpg', video:'vid_ch6_felix.mp4',
+      d:'Ты вырастил Феликса — и он вырос через твою голову. При низком боевом духе молодые пошли за ним, а не за тобой. Совет выбирает его. Ты уходишь, аплодируя чужой победе.'};
+  if(m.soul>=75 && m.mor>=70 && m.cap>=60 && loyal>=5)
+    return {key:'home', t:'🏆 Тёплый дом', art:'ch10_04_ending.jpg', video:'vid_ch10_ending.mp4',
+      d:'Ты сделал невозможное: компания-семья, где людей ценят как людей — и при этом крепкий, устойчивый успех. Команда пойдёт за тобой в огонь. Барон смотрит с гордостью: ты превзошёл его.'};
+  if(m.cap>=80 && m.rep>=70 && m.soul<50)
+    return {key:'empire', t:'🏙️ Империя', art:'ch10_05_ending_cold.jpg', video:'vid_ch10_ending.mp4',
+      d:'Ты построил гиганта. Капитал и репутация на вершине — но душу компании ты продал по дороге. Стоишь один над сияющим городом-империей. Успех оглушительный. И оглушительно одинокий.'};
+  if(m.cap>=60 && (lost>=3 || (f.dirtyDeal&&f.surveillance) || f.dealBagira))
+    return {key:'pyrrhic', t:'⚔️ Пиррова победа', art:'ch7_02_bagira.jpg', video:'vid_ch7_bagira.mp4',
+      d:'Ты выиграл — но поле боя усеяно теми, кем ты пожертвовал. Компания жива, счета в плюсе, а рядом почти никого не осталось. Победа, вкус которой — пепел.'};
+  return {key:'quiet', t:'🌫️ Тихий уход', art:'ch9_03_fork.jpg', video:'vid_ch9_reckoning.mp4',
+    d:'Ты провёл «Девять» сквозь бури, не сорвавшись ни в одну крайность — но и не зажёгшись. Компания живёт дальше. А ты тихо отдаёшь ключ и уходишь, уставший, как когда-то Барон. Круг замкнулся.'};
+}
+function heroEpilogues(){
+  const r=state.rel, f=state.flags, L=[];
+  const ep=(id,warm,cold,neu)=>{ const v=r[id]||0; L.push(`<b>${NAME[id]}:</b> ${v>=2?warm:v<=-2?cold:neu}`); };
+  ep('sonya','поверила в тебя и выросла в сильного лидера — твоя школа не прошла даром.','разочаровалась и ушла искать место, где в людей ещё верят.','осталась милой стажёркой, тихо делающей своё дело.');
+  ep('felix', f.mentoredFelix?'стал твоей правой рукой — амбиция, направленная в дело.':'получил свою власть и теперь играет уже свою партию.','затаил обиду и при первом случае ушёл к конкуренту.','остался ярким, но так и не приручённым талантом.');
+  ep('grisha', f.grishaSaved?'благодарен по гроб — ты спас его семью и здоровье.':'тянет лямку дальше, преданный, как и был.', f.grishaBroken?'сломался и уволился — тихо, без упрёков, как и жил.':'выгорел, но остался, потому что больше некуда.','держит логистику, незаметный и незаменимый.');
+  ep('vasilisa','твоя главная опора — с ней «Девять» устоит перед чем угодно.','ушла, забрав с собой половину сильной команды.','осталась профессионалом на дистанции.');
+  ep('bagira', f.exposeBagira?'разоблачена и повержена — её игра окончена.':(f.dealBagira?'осталась рядом — опасный союзник, которому ты теперь должен.':'исчезла так же красиво, как появилась, затаив своё.'),'стала твоим злейшим врагом — и это надолго.','так и осталась загадкой, чью сторону выбрала.');
+  ep('cleo', f.madeAmends?'сняла маску и стала настоящей — благодарна, что ты увидел человека.':'блестит дальше, лицо бренда без трещин.','ушла, унеся свой хайп и обиду к конкурентам.','осталась глянцевой витриной компании.');
+  ep('murka', f.careProgram?'счастлива: ты построил компанию, где людей берегут — её мечта сбылась.':'тянет всех на себе, тихо надеясь, что однажды спасут и её.','выгорела и ушла — душа коллектива погасла.','остаётся тем, к кому идут за теплом.');
+  ep('tisha', f.romanceTS?'нашёл с Соней тихое счастье — гений наконец улыбается.':'построил тебе лучшую платформу в отрасли.','замкнулся и ушёл в стартап, где его слышат.','молчит и держит всю технологию на своих плечах.');
+  ep('marsel', f.romanceMV?'снова счастлив с Василисой — второй шанс, который ты подарил.':(f.trustMarsel?'воскрес как звезда продаж — ты в него поверил не зря.':'нашёл своё место, уже без страха оказаться лишним.'),'сломлен — ты добил то, что и так трещало.','доигрывает свою партию с достоинством.');
+  ep('baron','уходит на покой спокойным: он не ошибся, отдав тебе «Девять».','качает головой — не таким он видел наследника.','наблюдает издалека, оставляя тебе твой путь.');
+  return L;
+}
+function startFinale(){
+  const e=computeEnding(); state.flags.endingKey=e.key;
+  localStorage.removeItem(SAVE_KEY);
+  const eps=heroEpilogues().map(l=>`<div class="cons">${l}</div>`).join('');
+  const art = e.video
+    ? `<video class="cam-video" playsinline autoplay loop muted src="${CLIP_DIR}${e.video}?v=3" style="max-height:34vh;margin:0 auto 14px;"></video>`
+    : `<img src="${ASSET_DIR}${e.art}?v=3" style="width:100%;max-height:34vh;object-fit:cover;border-radius:16px;margin-bottom:14px;">`;
+  $('screen-end').innerHTML=`<div class="end-wrap">
+      <div class="end-kicker">Финал · Глава 10 · твоя концовка</div>
+      ${art}
+      <h2>${e.t}</h2>
+      <p>${e.d}</p>
+      <div class="stat-row">💰 ${Math.round(state.m.cap)} · ⭐ ${Math.round(state.m.rep)} · ❤️ ${Math.round(state.m.mor)} · 🔮 ${Math.round(state.m.soul)}</div>
+      <div class="end-score">Скор: <b>${score()}</b> / 400 · лояльных: ${loyalCount()} · потеряно: ${lostCount()}</div>
+      <div class="stand"><b>Что стало с командой:</b></div>
+      ${eps}
+      <div class="cant">Ты прожил девять судеб. Такова цена кресла.</div>
+      <button class="btn" style="min-width:240px;margin:14px 0 10px;" onclick="shareWeek()">↗ Поделиться финалом</button>
+      <button class="btn btn-primary" style="min-width:240px;" onclick="hardReset()">↺ Прожить заново — другим боссом</button>
+    </div>`;
+  const v=$('screen-end').querySelector('video'); if(v){ v.play().catch(()=>{}); }
+  show('screen-end');
 }
 
 function endSlice(){

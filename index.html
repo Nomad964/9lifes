@@ -211,6 +211,27 @@
   .anom-chips span{font-size:12px; color:#c9cee0; background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:3px 8px;}
   .anom-reveal{margin:6px 0 14px; font-size:14px; line-height:1.5; color:#eee7d8; background:rgba(212,162,74,.08); border:1px solid rgba(212,162,74,.28); border-left:3px solid var(--gold); border-radius:12px; padding:11px 13px; text-align:left;}
 
+  /* ===== Шифр сейфа ===== */
+  .safe-slots{display:flex; justify-content:center; gap:16px; margin:8px 0 12px;}
+  .safe-slot{display:flex; flex-direction:column; align-items:center; gap:6px;}
+  .safe-slot button{width:52px; height:34px; border-radius:9px; border:1px solid var(--gold); background:rgba(212,162,74,.12); color:var(--gold-soft); font-size:15px; cursor:pointer;}
+  .safe-dig{width:52px; height:56px; display:flex; align-items:center; justify-content:center; font-family:'Oswald'; font-size:30px; color:#fff; background:rgba(255,255,255,.05); border:1.5px solid rgba(212,162,74,.4); border-radius:10px;}
+  .safe-dig.rev{border-color:var(--emerald); color:var(--emerald);}
+  .safe-clue{font-size:13px; color:var(--emerald); margin-bottom:8px;}
+  .safe-hist{margin-top:6px; display:flex; flex-direction:column; gap:5px;}
+  .safe-hrow{display:flex; justify-content:space-between; align-items:center; font-family:'Oswald'; font-size:16px; letter-spacing:3px; color:#cdd2df; background:rgba(255,255,255,.03); border-radius:8px; padding:5px 12px;}
+  .safe-pegs{font-size:12px; letter-spacing:1px;}
+
+  /* ===== Весы решений ===== */
+  .sc-wrap{display:flex; justify-content:center; gap:26px; margin:6px 0 10px; align-items:flex-end;}
+  .sc-col{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .sc-bar{width:56px; height:110px; background:rgba(255,255,255,.05); border:1px solid rgba(212,162,74,.25); border-radius:10px; display:flex; align-items:flex-end; overflow:hidden;}
+  .sc-bar i{display:block; width:100%; transition:height .25s;}
+  .sc-cap{background:linear-gradient(180deg,#e7c98a,#b98d3e);}
+  .sc-soul{background:linear-gradient(180deg,#66d8c0,#149B7E);}
+  .sc-lbl{font-size:12px; color:#c9cee0; text-align:center; line-height:1.3;}
+  .sc-col .btn{min-width:120px; padding:8px 10px; font-size:13px;}
+
   /* ===== Досье команды (HR) ===== */
   #screen-dossier{padding:0 0 calc(104px + env(safe-area-inset-bottom)); overflow-y:auto;}
   .dossier-head{position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:16px 16px 12px; background:linear-gradient(180deg,var(--ink) 70%,transparent); backdrop-filter:blur(6px);}
