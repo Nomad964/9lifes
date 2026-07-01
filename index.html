@@ -14,6 +14,8 @@
     --cream:#F5EFE3; --bordo:#8E2C42;
     --rep:#5AA9E6; --mor:#E8688A;
     --glass:rgba(255,255,255,.055); --glass-bd:rgba(255,255,255,.13);
+    /* верхний резерв под плашку ВК (✕ ⋯ висят поверх окна) */
+    --vktop: calc(env(safe-area-inset-top, 0px) + 48px);
   }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
@@ -58,7 +60,7 @@
   .screen.active{opacity:1; transform:none; pointer-events:auto;}
 
   /* ===== TITLE ===== */
-  #screen-title{justify-content:center; align-items:center; text-align:center; padding:30px 26px;}
+  #screen-title{justify-content:center; align-items:center; text-align:center; padding:calc(var(--vktop) + 6px) 26px 30px;}
   .emblem{width:120px; height:120px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-bottom:22px; position:relative;
     background:radial-gradient(circle at 50% 35%, rgba(212,162,74,.25), rgba(15,16,25,.2) 70%);
     border:1.5px solid rgba(212,162,74,.5); box-shadow:0 0 40px rgba(212,162,74,.35), inset 0 0 30px rgba(212,162,74,.18); animation:breathe 4s ease-in-out infinite;}
@@ -87,7 +89,7 @@
   @keyframes cta{0%,100%{box-shadow:0 0 16px rgba(212,162,74,.3), inset 0 0 12px rgba(212,162,74,.12);}50%{box-shadow:0 0 30px rgba(212,162,74,.6), inset 0 0 18px rgba(212,162,74,.22);}}
 
   /* ===== INTRO cinematic ===== */
-  #screen-intro{justify-content:center; align-items:center; text-align:center; padding:40px 30px;}
+  #screen-intro{justify-content:center; align-items:center; text-align:center; padding:calc(var(--vktop) + 10px) 30px 40px;}
   .cine{font-family:'Playfair Display',serif; font-weight:600; font-size:23px; line-height:1.45; letter-spacing:.3px; color:var(--cream); margin-bottom:18px; opacity:0;}
   .cine.b{color:var(--gold-soft);}
   .cine.show{animation:fadein 1s forwards;}
@@ -96,7 +98,7 @@
 
   /* ===== GAME ===== */
   #screen-game{padding:0;}
-  header{padding:max(14px,env(safe-area-inset-top)) 16px 8px; display:flex; align-items:center; justify-content:space-between;}
+  header{padding:var(--vktop) 16px 8px; display:flex; align-items:center; justify-content:space-between;}
   .logo{font-family:'Playfair Display',serif; font-weight:800; letter-spacing:.5px; font-size:23px;
     background:linear-gradient(110deg,#fff 12%,var(--gold-soft) 38%,#fff 52%,var(--gold) 74%,#a9772e 92%); background-size:220% auto;
     -webkit-background-clip:text; background-clip:text; color:transparent; animation:shimmerText 5.5s linear infinite;}
@@ -157,7 +159,7 @@
   .saved{font-size:11px; color:var(--emerald); opacity:0; transition:opacity .3s;}
 
   /* ===== END ===== */
-  #screen-end{align-items:center; text-align:center; padding:28px 18px calc(86px + env(safe-area-inset-bottom));}
+  #screen-end{align-items:center; text-align:center; padding:calc(var(--vktop) + 6px) 18px calc(86px + env(safe-area-inset-bottom));}
   .end-bg{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.16; z-index:0;}
   .end-wrap{position:relative; z-index:1; width:100%; max-width:360px;}
   .end-kicker{font-family:'Oswald'; letter-spacing:3px; font-size:12px; text-transform:uppercase; color:var(--gold-soft); margin-bottom:8px;}
@@ -171,7 +173,7 @@
   .end-score{font-family:'Oswald'; letter-spacing:1px; color:var(--gold-soft); font-size:16px; margin:4px 0 14px;}
   .stat-row{font-family:'Oswald'; letter-spacing:1px; color:#cdd2df; font-size:15px; margin:16px 0 18px;}
   /* ===== PUZZLE ===== */
-  #screen-puzzle{align-items:center; text-align:center; padding:28px 18px calc(86px + env(safe-area-inset-bottom));}
+  #screen-puzzle{align-items:center; text-align:center; padding:calc(var(--vktop) + 6px) 18px calc(86px + env(safe-area-inset-bottom));}
   .pz-wrap{position:relative; z-index:1; width:100%; max-width:360px; text-align:center;}
   #screen-puzzle h2{font-family:'Playfair Display',serif; font-weight:900; color:var(--gold); font-size:26px; margin-bottom:10px;}
   #screen-puzzle p{font-size:14px; line-height:1.55; color:#e7e2d6; margin-bottom:12px;}
@@ -181,7 +183,7 @@
   .pz-timer.low{color:#e8688a;}
   .nego-stat{font-family:'Oswald'; letter-spacing:1px; color:var(--gold-soft); font-size:19px;}
   /* ===== CAMERA (reward) ===== */
-  #screen-cam{align-items:center; justify-content:center; text-align:center; padding:20px 16px calc(30px + env(safe-area-inset-bottom));}
+  #screen-cam{align-items:center; justify-content:center; text-align:center; padding:calc(var(--vktop) + 4px) 16px calc(30px + env(safe-area-inset-bottom));}
   .cam-wrap{width:100%; max-width:340px;}
   .cam-kicker{font-family:'Oswald'; letter-spacing:2px; font-size:12px; color:var(--gold-soft); text-transform:uppercase; margin-bottom:10px;}
   .cam-videowrap{position:relative; display:inline-block; width:100%;}
@@ -246,7 +248,7 @@
 
   /* ===== Досье команды (HR) ===== */
   #screen-dossier{padding:0 0 calc(104px + env(safe-area-inset-bottom)); overflow-y:auto;}
-  .dossier-head{position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:16px 16px 12px; background:linear-gradient(180deg,var(--ink) 70%,transparent); backdrop-filter:blur(6px);}
+  .dossier-head{position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:var(--vktop) 16px 12px; background:linear-gradient(180deg,var(--ink) 70%,transparent); backdrop-filter:blur(6px);}
   .dossier-title{font-family:'Playfair Display',serif; font-size:20px; color:var(--gold); letter-spacing:.5px;}
   .dossier-lead{padding:0 18px 14px; font-size:13.5px; line-height:1.5; color:#b7bccb; text-align:center;}
   #dossier-grid{display:grid; grid-template-columns:1fr 1fr; gap:11px; padding:0 14px;}
