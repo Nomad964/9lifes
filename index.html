@@ -18,54 +18,42 @@
     --vktop: calc(env(safe-area-inset-top, 0px) + 48px);
   }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;}
+  html{height:100%;}
   body{
-    background:var(--ink); color:var(--cream); font-family:'Manrope',sans-serif;
-    display:flex; justify-content:center; align-items:stretch; overflow:hidden;
+    background:#0c0d14; color:var(--cream); font-family:'Manrope',sans-serif;
+    min-height:100dvh; overflow-x:hidden; overscroll-behavior-y:none; -webkit-text-size-adjust:100%;
   }
 
-  /* ===== Живой фон ===== */
-  #app{
-    width:100%; max-width:480px; height:100vh; height:100dvh; position:relative; overflow:hidden;
-    display:flex; flex-direction:column;
-    background:radial-gradient(130% 90% at 50% -10%, #20243a 0%, #12131d 55%, #0c0d14 100%);
-  }
-  #app::before{ /* дрейфующие световые пятна (inset:0 — НЕ выходить за края, иначе #app скроллится и ломает прокрутку) */
-    content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  /* ===== Живой фон — ФИКСИРОВАН во вьюпорте, НЕ участвует в прокрутке ===== */
+  #bgfx{ position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;
+    background:radial-gradient(130% 90% at 50% -10%, #20243a 0%, #12131d 55%, #0c0d14 100%); }
+  #bgfx::before{ content:''; position:absolute; inset:0; pointer-events:none;
     background:
       radial-gradient(35% 30% at 25% 20%, rgba(20,155,126,.22), transparent 70%),
       radial-gradient(40% 35% at 80% 30%, rgba(212,162,74,.20), transparent 70%),
       radial-gradient(45% 40% at 60% 95%, rgba(142,44,66,.18), transparent 70%);
-    filter:blur(20px); animation:drift 26s ease-in-out infinite alternate;
-  }
+    filter:blur(20px); animation:drift 26s ease-in-out infinite alternate; }
   @keyframes drift{0%{transform:translate(0,0) scale(1);}50%{transform:translate(-3%,2%) scale(1.08);}100%{transform:translate(3%,-2%) scale(1.04);}}
-  #app::after{ /* виньетка */
-    content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
-    background:radial-gradient(120% 80% at 50% 40%, transparent 55%, rgba(0,0,0,.55) 100%);
-  }
-  #particles{position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden;}
+  #bgfx::after{ content:''; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(120% 80% at 50% 40%, transparent 55%, rgba(0,0,0,.55) 100%); }
+  #particles{position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;}
   .pt{position:absolute; bottom:-10px; width:4px; height:4px; border-radius:50%;
     background:radial-gradient(circle, var(--gold-soft), rgba(212,162,74,0));
     opacity:0; animation:rise linear infinite;}
   @keyframes rise{0%{transform:translateY(0) translateX(0); opacity:0;}10%{opacity:.8;}90%{opacity:.6;}100%{transform:translateY(-104vh) translateX(20px); opacity:0;}}
 
-  .layer{position:relative; z-index:2; flex:1; display:flex; flex-direction:column;}
+  /* ===== #app — обычный поток, растёт по контенту; страницу скроллит сам BODY (надёжно на iOS) ===== */
+  #app{ position:relative; z-index:1; width:100%; max-width:480px; margin:0 auto; min-height:100dvh; }
 
   /* ===== Glass utility ===== */
   .glass{background:var(--glass); border:1px solid var(--glass-bd); backdrop-filter:blur(14px) saturate(130%); -webkit-backdrop-filter:blur(14px) saturate(130%); box-shadow:0 8px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);}
 
-  /* ===== Screens ===== */
-  .screen{position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; opacity:0; transform:translateY(8px); pointer-events:none; transition:opacity .55s ease, transform .55s ease; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y;}
-  /* iOS: чтобы вертикальный свайп СКРОЛЛИЛ откуда угодно, а не «залипал» над видео/фото в центре */
-  #scene, #scene-vid, #scene-img, #scene .placeholder, #metrics, #story{touch-action:pan-y;}
-  /* одноразовая подсказка «листай» */
-  #scrollhint{position:fixed; left:50%; bottom:calc(96px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:60; pointer-events:none;
-    background:rgba(9,10,16,.88); border:1px solid var(--gold); color:var(--gold-soft); font-family:'Manrope',sans-serif; font-size:13.5px; font-weight:600;
-    padding:9px 16px; border-radius:22px; box-shadow:0 6px 24px rgba(0,0,0,.5); backdrop-filter:blur(4px); transition:opacity .4s; animation:hintbob 1.4s ease-in-out infinite;}
-  #scrollhint.hide{opacity:0;}
-  @keyframes hintbob{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(-6px);}}
-  .screen:not(.active){overflow:hidden;}
-  .screen.active{opacity:1; transform:none; pointer-events:auto;}
+  /* ===== Screens — только активный в потоке; страницу скроллит BODY ===== */
+  .screen{display:none;}
+  .screen.active{display:flex; flex-direction:column; min-height:100dvh; animation:scrfade .45s ease;}
+  @keyframes scrfade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  /* iOS: вертикальный свайп скроллит откуда угодно (медиа не перехватывают жест) */
+  #scene, #scene-vid, #scene-img, #scene .placeholder{touch-action:pan-y;}
 
   /* ===== TITLE ===== */
   #screen-title{justify-content:center; align-items:center; text-align:center; padding:calc(var(--vktop) + 6px) 26px 30px;}
@@ -297,8 +285,9 @@
 <script src="./vendor/vk-bridge.min.js"></script>
 </head>
 <body>
+<div id="bgfx"></div>
+<div id="particles"></div>
 <div id="app">
-  <div id="particles"></div>
 
   <!-- Заглушка при повороте в ландшафт (телефон) -->
   <div id="rotate">

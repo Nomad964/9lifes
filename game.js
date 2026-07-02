@@ -48,9 +48,28 @@ const Streak = {
   }
 };
 
-/* === Звуки === лёгкие WebAudio-тоны, без файлов. Включаются на жестах игрока. */
+/* Короткий «клик» как WAV data-URI (для HTMLAudio — переживает видео-сессию iOS, в отличие от WebAudio) */
+function _wavDataURI(freq, ms, vol){
+  const sr=11025, n=Math.floor(sr*ms/1000), data=new Int16Array(n);
+  for(let i=0;i<n;i++){ const t=i/sr, env=Math.exp(-t*38); data[i]=Math.round(Math.sin(2*Math.PI*freq*t)*env*(vol||0.5)*32767); }
+  const hb=new ArrayBuffer(44), dv=new DataView(hb), ws=(o,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF'); dv.setUint32(4,36+n*2,true); ws(8,'WAVE'); ws(12,'fmt '); dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true); dv.setUint32(24,sr,true); dv.setUint32(28,sr*2,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true); ws(36,'data'); dv.setUint32(40,n*2,true);
+  const bytes=new Uint8Array(44+n*2); bytes.set(new Uint8Array(hb),0); bytes.set(new Uint8Array(data.buffer),44);
+  let bin=''; for(let i=0;i<bytes.length;i++) bin+=String.fromCharCode(bytes[i]);
+  return 'data:audio/wav;base64,'+btoa(bin);
+}
+
+/* === Звуки === WebAudio-тоны для акцентов; тап — на HTMLAudio (надёжно после видео). */
 const SFX={
-  ctx:null, on:true,
+  ctx:null, on:true, _tapPool:null, _tapURI:null, _tapIdx:0,
+  _htmlTap(){
+    try{
+      if(!this._tapURI) this._tapURI=_wavDataURI(520,55,0.5);
+      if(!this._tapPool){ this._tapPool=[0,1,2].map(()=>{ const a=new Audio(this._tapURI); a.volume=0.4; return a; }); }
+      const a=this._tapPool[this._tapIdx=(this._tapIdx+1)%this._tapPool.length];
+      a.currentTime=0; a.play().catch(()=>{});
+    }catch(e){ try{ this.tone(500,0.045,'triangle',0.05); }catch(_){} }
+  },
   _c(){
     // iOS после видео/рекламы уводит контекст в closed/interrupted и resume его не оживляет —
     // в этих состояниях пересоздаём контекст заново (вызывается на каждом тапе-жесте).
@@ -63,7 +82,7 @@ const SFX={
   },
   tone(f,d,type,vol,delay){ if(!this.on)return; const c=this._c(); if(!c)return; const t=c.currentTime+(delay||0); const o=c.createOscillator(),g=c.createGain(); o.type=type||'sine'; o.frequency.value=f; g.gain.setValueAtTime(vol||0.05,t); o.connect(g); g.connect(c.destination); o.start(t); g.gain.exponentialRampToValueAtTime(0.0001,t+d); o.stop(t+d); },
   click(){ this.tone(430,0.07,'triangle',0.045); },
-  tap(){ this.tone(500,0.045,'triangle',0.05); this.tone(320,0.05,'sine',0.03); },
+  tap(){ if(!this.on)return; this._htmlTap(); },
   step(){ this.tone(640,0.05,'square',0.03); },
   confirm(){ this.tone(560,0.1,'sine',0.05); this.tone(760,0.12,'sine',0.05,0.07); },
   good(){ this.tone(620,0.12,'sine',0.06); this.tone(820,0.13,'sine',0.06,0.09); this.tone(1040,0.16,'sine',0.05,0.19); },
@@ -471,9 +490,9 @@ function show(id){
   // уходя с игрового экрана — глушим и останавливаем видео сцены
   if(id!=='screen-game'){ try{const v=$('scene-vid'); v.pause(); v.muted=true; v.removeAttribute('src'); v.load&&v.load();}catch(e){} }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  const t=$(id); t.classList.add('active');
-  // сброс прокрутки после кадра — иначе шапку утягивает вверх и на iOS подмерзает скролл
-  requestAnimationFrame(()=>{ try{ t.scrollTop=0; const a=$('app'); if(a)a.scrollTop=0; }catch(e){} });
+  $(id).classList.add('active');
+  // страницу скроллит body — просто прокручиваем в начало нового экрана
+  try{ window.scrollTo(0,0); }catch(e){}
 }
 
 /* Зоны метрик: во время главы показываем СЛОВО, а не точное число (интрига + меньше мин-макса) */
@@ -555,7 +574,7 @@ function soulVerdict(){const s=state.m.soul;
   return'Ты балансируешь между <b>людьми и эффективностью</b>. Куда качнёшь — решат следующие недели.';}
 
 function renderEvent(){
-  requestAnimationFrame(()=>{ try{ $('screen-game').scrollTop=0; }catch(e){} });   // каждая новая сцена — сверху, с шапки и метрик
+  try{ window.scrollTo(0,0); }catch(e){}   // каждая новая сцена — сверху, с шапки и метрик
   const ev=EVENTS[state.cur];
   const scene=$('scene'), vid=$('scene-vid'), img=$('scene-img');
   const ctls=$('scene-ctls'), pauseBtn=$('scene-pause'), soundBtn=$('scene-sound');
@@ -1314,16 +1333,7 @@ function nextChapter(){
 }
 
 function flashSaved(){const s=$('saved');s.style.opacity=1;setTimeout(()=>s.style.opacity=0,800);}
-/* Одноразовая подсказка «листай экран» (первый заход в игру) */
-function showScrollHint(){
-  try{ if(localStorage.getItem('devyat9_hint')) return; localStorage.setItem('devyat9_hint','1'); }catch(e){ return; }
-  const h=document.createElement('div'); h.id='scrollhint'; h.textContent='👆 Листай экран вверх-вниз';
-  document.body.appendChild(h);
-  const kill=()=>{ if(!h.parentNode) return; h.classList.add('hide'); setTimeout(()=>{ if(h.parentNode) h.remove(); },400); document.removeEventListener('touchmove',kill); };
-  setTimeout(kill, 5500);
-  document.addEventListener('touchmove', kill, {passive:true});
-}
-function startGame(){state=fresh();try{state.streak=Streak.check();}catch(e){}snapshot();renderMetrics();renderEvent();show('screen-game');save();setTimeout(showScrollHint,900);}
+function startGame(){state=fresh();try{state.streak=Streak.check();}catch(e){}snapshot();renderMetrics();renderEvent();show('screen-game');save();}
 function hardReset(){startGame();}
 function snapshot(){ try{ state._snap=JSON.stringify({m:state.m,flags:state.flags,rel:state.rel,weekNum:state.weekNum,cur:state.cur}); }catch(e){} }
 function replayChapter(){
@@ -1443,34 +1453,9 @@ document.addEventListener('click',e=>{
   try{ SFX.tap(); }catch(err){}
 },true);
 
-/* Скролл-фикс: причина была в декоративном фоне #app::before (inset:-25%) — он делал сам #app
-   прокручиваемым, туда уводило фокусом видео/кнопок → шапку утягивало и на iOS залипало.
-   Причину убрали в CSS (inset:0), поэтому агрессивный зажим #app больше не нужен (он ломал
-   скролл вниз). Оставляем только буфер границы ниже. */
-
-/* iOS-webview фикс ЗАЛИПАНИЯ скролла на границе: если контейнер стоит вплотную к верх/низ,
-   он «замерзает» и оживает только репейнтом (блокировка/разблокировка экрана). Держим его
-   на 1px от края в начале каждого касания — тогда всегда есть куда «оттолкнуться». */
-document.addEventListener('touchstart',function(e){
-  var s=e.target && e.target.closest ? e.target.closest('.screen') : null; if(!s) return;
-  var max=s.scrollHeight - s.clientHeight; if(max<=1) return;
-  if(s.scrollTop<=0) s.scrollTop=1; else if(s.scrollTop>=max) s.scrollTop=max-1;
-},{passive:true});
-
-/* iOS-webview: после СВОРАЧИВАНИЯ/восстановления приложения (или ресайза) скролл-контейнер
-   «замерзает» и не поднимается вверх. Игрок подтвердил: блокировка/разблокировка экрана
-   лечит — то есть спасает РЕПЕЙНТ. Делаем этот репейнт программно (дёргаем overflow активного
-   экрана) при возврате в приложение, показе страницы и ресайзе. */
-function _unfreezeScroll(){
-  var s=document.querySelector('.screen.active'); if(!s) return;
-  var top=s.scrollTop;
-  s.style.overflowY='hidden'; void s.offsetHeight; s.style.overflowY=''; // форс-репейнт контейнера
-  s.scrollTop = top>0 ? top : 1;                                          // не оставлять на самом краю
-}
-document.addEventListener('visibilitychange',function(){ if(!document.hidden){ setTimeout(_unfreezeScroll,60); setTimeout(_unfreezeScroll,300); } });
-window.addEventListener('pageshow', function(){ setTimeout(_unfreezeScroll,60); });
-window.addEventListener('focus', function(){ setTimeout(_unfreezeScroll,60); });
-window.addEventListener('resize', function(){ setTimeout(_unfreezeScroll,60); });
+/* Скролл теперь естественный — страницу скроллит BODY (экраны в обычном потоке, только активный
+   виден). Это надёжно на iOS, поэтому все прежние костыли (зажим #app, буфер границы, репейнт при
+   возврате, одноразовая подсказка) удалены за ненадобностью. */
 
 $('btn-start').onclick=playIntro;
 $('intro-cta').onclick=startGame;
