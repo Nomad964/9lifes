@@ -28,7 +28,8 @@ const Ads = {
     try{
       if(window.vkBridge && window.vkBridge.send){
         // .then = ролик реально показали → обновляем таймер интерстишела, чтобы 2-я реклама подряд не вылезла
-        window.vkBridge.send('VKWebAppShowNativeAds',{ad_format:'reward'}).then(()=>{ Ads._lastInter=Date.now(); grant(); }).catch(grant);
+        // useWaterfall:true → если reward-видео нет в наличии, VK покажет интерстишел вместо пустоты (больше показов).
+        window.vkBridge.send('VKWebAppShowNativeAds',{ad_format:'reward', useWaterfall:true}).then(()=>{ Ads._lastInter=Date.now(); grant(); }).catch(grant);
       } else { grant(); }
     }catch(e){ grant(); }
   }
