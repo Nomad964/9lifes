@@ -1683,15 +1683,26 @@ function refreshContinue(){
       const nx=(s.weekNum||1)+1;
       label = chapterLocked(nx) ? ('▸ Продолжить · Глава '+nx+' через '+fmtRemain(lockRemain())) : ('✦ Глава '+nx+' открыта — играть!');
     } else { label='▸ Продолжить · Глава '+(s.weekNum||1); }
-    cont.textContent=label; cont.className='btn btn-primary btn-glow'; cont.style.cssText='min-width:250px; display:block; margin-bottom:12px;';
-    start.textContent='Новая игра'; start.className='ctrl'; start.style.cssText='margin-top:2px;';
+    cont.textContent=label; cont.className='btn btn-primary btn-glow'; cont.style.display='flex';
+    start.textContent='✕ Новая игра'; start.className='btn btn-ghost';
   } else {
     cont.style.display='none';
-    start.textContent='Принять «Девять» →'; start.className='btn btn-primary'; start.style.minWidth='230px';
+    start.textContent='Принять «Девять» →'; start.className='btn btn-primary';
   }
 }
+// Свой диалог: системный window.confirm() в VK-вебвью на iOS заблокирован (возвращает ложь) → «Новая игра» не запускалась.
+function askConfirm(msg, onYes){
+  const ov=document.createElement('div'); ov.className='modal-ov';
+  ov.innerHTML=`<div class="modal-card"><div class="modal-msg">${msg}</div>
+    <button class="btn btn-primary" id="mc-yes" style="margin-bottom:9px;">Начать заново</button>
+    <button class="btn btn-ghost" id="mc-no">Отмена</button></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#mc-yes').onclick=()=>{ ov.remove(); try{ onYes(); }catch(e){} };
+  ov.querySelector('#mc-no').onclick=()=>ov.remove();
+  ov.addEventListener('click',e=>{ if(e.target===ov) ov.remove(); });   // тап по фону = отмена
+}
 
-$('btn-start').onclick=()=>{ if(load() && !confirm('Начать заново? Текущий прогресс сбросится.')) return; playIntro(); };
+$('btn-start').onclick=()=>{ if(load()) askConfirm('Начать заново? Текущий прогресс сбросится.', playIntro); else playIntro(); };
 $('intro-cta').onclick=startGame;
 $('restart').onclick=hardReset;
 $('btn-dossier').onclick=openDossier;

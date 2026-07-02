@@ -156,6 +156,18 @@
 
   footer{margin-top:auto; padding:10px 16px calc(20px + env(safe-area-inset-bottom)); display:flex; justify-content:space-between; align-items:center;}
   .ctrl{background:none; border:none; color:#7b8197; font-size:12px; cursor:pointer; font-family:'Manrope';}
+  /* Старт-экран: единый столбец крупных кнопок с нормальной зоной нажатия */
+  .title-actions{display:flex; flex-direction:column; align-items:stretch; gap:11px; width:100%; max-width:330px; margin-top:6px;}
+  .title-actions .btn{width:100%; min-height:54px; display:flex; align-items:center; justify-content:center; text-align:center; text-decoration:none;}
+  /* Вторичная кнопка — читаемая, спокойнее primary, но полноценно кликабельная */
+  .btn-ghost{background:linear-gradient(135deg, rgba(212,162,74,.14), rgba(212,162,74,.04)); box-shadow:inset 0 0 12px rgba(212,162,74,.08); animation:none; color:var(--cream); font-weight:600;}
+  .btn-ghost::after{display:none;}
+  .btn-support{font-size:13px; min-height:46px!important; color:var(--gold-soft); border-color:rgba(212,162,74,.4);}
+  /* Свой in-app диалог (системный confirm() в VK-вебвью заблокирован) */
+  .modal-ov{position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center; padding:26px; background:rgba(8,9,14,.72); backdrop-filter:blur(3px); animation:scrfade .25s ease;}
+  .modal-card{width:100%; max-width:340px; text-align:center; padding:22px 20px; border-radius:18px; background:linear-gradient(160deg, #191722, #12121a); border:1px solid rgba(212,162,74,.4); box-shadow:0 20px 60px rgba(0,0,0,.6), 0 0 30px rgba(212,162,74,.18);}
+  .modal-msg{font-size:16px; line-height:1.5; color:#F3ECDD; margin-bottom:18px;}
+  .modal-card .btn{width:100%; min-height:52px; display:flex; align-items:center; justify-content:center;}
   .ctrl:hover{color:var(--gold-soft);}
   .saved{font-size:11px; color:var(--emerald); opacity:0; transition:opacity .3s;}
 
@@ -342,10 +354,12 @@
     <div class="title-big">9 ЖИЗНЕЙ</div>
     <div class="title-sub">Котополис · 2026</div>
     <div class="tagline">Тебе отдают целую компанию. И девять судеб, которые теперь зависят только от твоих решений.</div>
-    <button class="btn btn-primary btn-glow" id="btn-continue" style="min-width:250px; display:none; margin-bottom:12px;">▸ Продолжить</button>
-    <button class="btn btn-primary" id="btn-start" style="min-width:230px;">Принять «Девять» →</button>
-    <button class="ctrl" id="btn-dossier" style="margin-top:12px;">👥 Досье команды</button>
-    <a class="ctrl" id="btn-support" href="https://vk.me/club231698113" target="_blank" rel="noopener" style="margin-top:10px; text-decoration:none; display:block;">🐾 Что-то не работает? Напишите — мы рядом</a>
+    <div class="title-actions">
+      <button class="btn btn-primary btn-glow" id="btn-continue" style="display:none;">▸ Продолжить</button>
+      <button class="btn btn-primary" id="btn-start">Принять «Девять» →</button>
+      <button class="btn btn-ghost" id="btn-dossier">👥 Досье команды</button>
+      <a class="btn btn-ghost btn-support" id="btn-support" href="https://vk.me/club231698113" target="_blank" rel="noopener">🐾 Что-то не работает? Напишите</a>
+    </div>
   </section>
 
   <!-- DOSSIER (HR) -->
