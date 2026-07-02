@@ -62,14 +62,19 @@ function _wavDataURI(freq, ms, vol){
 
 /* === Звуки === WebAudio-тоны для акцентов; тап — на HTMLAudio (надёжно после видео). */
 const SFX={
-  ctx:null, on:true, _tapPool:null, _tapURI:null, _tapIdx:0,
+  ctx:null, on:true, _tapURI:null,
   _htmlTap(){
+    // Свежий Audio на каждый тап: iOS после видео со звуком глушит ПЕРЕИСПОЛЬЗУЕМЫЕ элементы,
+    // а только что созданный внутри жеста звучит стабильно. WebAudio-тон — как запасной вариант.
     try{
       if(!this._tapURI) this._tapURI=_wavDataURI(520,55,0.5);
-      if(!this._tapPool){ this._tapPool=[0,1,2].map(()=>{ const a=new Audio(this._tapURI); a.volume=0.4; return a; }); }
-      const a=this._tapPool[this._tapIdx=(this._tapIdx+1)%this._tapPool.length];
-      a.currentTime=0; a.play().catch(()=>{});
-    }catch(e){ try{ this.tone(500,0.045,'triangle',0.05); }catch(_){} }
+      const a=new Audio(this._tapURI); a.volume=0.4;
+      const p=a.play(); if(p&&p.catch) p.catch(()=>{ try{ this.tone(500,0.05,'triangle',0.05); }catch(_){} });
+    }catch(e){ try{ this.tone(500,0.05,'triangle',0.05); }catch(_){} }
+  },
+  unlock(){   // разовый прогрев на первом касании: оживить WebAudio + расшевелить HTMLAudio
+    try{ this._c(); }catch(e){}
+    try{ if(!this._tapURI) this._tapURI=_wavDataURI(520,55,0.5); const a=new Audio(this._tapURI); a.volume=0; const p=a.play(); if(p&&p.then) p.then(()=>{try{a.pause();}catch(_){}}).catch(()=>{}); }catch(e){}
   },
   _c(){
     // iOS после видео/рекламы уводит контекст в closed/interrupted и resume его не оживляет —
@@ -1644,6 +1649,11 @@ document.addEventListener('click',e=>{
   if(!t || t.disabled || t.closest('.pz-stepper')) return;
   try{ SFX.tap(); }catch(err){}
 },true);
+/* Разовый прогрев звука на самом первом касании (iOS требует жест для разблокировки аудио). */
+['touchend','pointerup','click'].forEach(ev=>document.addEventListener(ev,function _u(){ try{ SFX.unlock(); }catch(e){} document.removeEventListener(ev,_u); }, {passive:true}));
+/* После ЛЮБОГО видео (сцена/камера/тизер) заканчивается или ставится на паузу — заново расшевелить тап-звук. */
+document.addEventListener('ended',()=>{ try{ SFX.unlock(); }catch(e){} }, true);
+document.addEventListener('pause',()=>{ try{ SFX.unlock(); }catch(e){} }, true);
 
 /* Скролл теперь естественный — страницу скроллит BODY (экраны в обычном потоке, только активный
    виден). Это надёжно на iOS, поэтому все прежние костыли (зажим #app, буфер границы, репейнт при
