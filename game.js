@@ -384,10 +384,10 @@ const EVENTS = {
       {label:'Отпустить с достоинством.',sub:'Тёплое прощание',fx:{soul:+3,mor:+1},set:{lostOne:true},next:'ch7_week'},
       {label:'Пусть уходит — слабым не место.',sub:'Холод',fx:{cap:+3,mor:-6,soul:-5},rel:{murka:-3},set:{coldFarewell:true,lostOne:true},next:'ch7_week'} ] },
 
-  ch7_week:{ loc:'СЕРВЕРНАЯ · АУДИТ-СЕТКА', emoji:'🧮', tag:'Аудит', img:'ch7_05_grid.jpg',
-    title:'Аудит-сетка',
-    text:'Чтобы закрыть дыру навсегда, надо перекрёстно свести журналы: кто, когда и к чему тянулся. Найди в сетке единственный след, что выдаёт сообщника крота.',
-    choices:[{label:'Открыть аудит-сетку →',sub:'Свести улики',puzzle:'grid'}] },
+  ch7_week:{ loc:'СЕРВЕРНАЯ · НОЧНОЙ СЛЕД', emoji:'🧠', tag:'След', img:'ch7_05_grid.jpg',
+    title:'Цепочка доступов',
+    text:'Тиша поднял живой лог: система подсветит цепочку ночных входов крота — тот самый след, что ведёт к сообщнику. Мелькнёт лишь раз. Запомни порядок и повтори — иначе улика растворится.',
+    choices:[{label:'Смотреть на след →',sub:'Запомни цепочку',puzzle:'access'}] },
 
   /* ===================== ГЛАВА 8 · На грани ===================== */
   ch8_intro:{ loc:'ВАР-РУМ · CRITICAL', emoji:'🚨', tag:'Кризис', img:'ch8_01_crisis.jpg', video:'vid_ch8_crisis.mp4', vtype:'loop',
@@ -408,11 +408,11 @@ const EVENTS = {
       {label:'Не вмешиваться — их дело.',sub:'Уважение',fx:{soul:+2},set:{romanceTS:true},next:'ch8_nego'},
       {label:'Осадить: «Не на работе».',sub:'Сушь',fx:{cap:+1,soul:-5,mor:-3},rel:{tisha:-3,sonya:-3},set:{banTS:true},next:'ch8_nego'} ] },
 
-  ch8_nego:{ loc:'ПЕРЕГОВОРНЫЙ СТОЛ · НОЧЬ', emoji:'🤝', tag:'Ва-банк', img:'ch8_03_negotiation.jpg', video:'vid_ch8_partner.mp4', vtype:'tap',
+  ch8_nego:{ loc:'СКЛАД · АВРАЛЬНАЯ ОТГРУЗКА', emoji:'📦', tag:'Отгрузка', img:'ch8_03_negotiation.jpg', video:'vid_ch8_partner.mp4', vtype:'tap',
     cam:{video:'vid_cam_15.mp4', flag:'sawCam15', cap:'Камера: Клео тайком встречается с кем-то из чужой команды и передаёт конверт. Её блеск скрывает собственную игру — на чьей она стороне?'},
-    title:'Решающая сделка',
-    text:'Оппонент прижал тебя к стене: одна ошибка — и от «Девять» ничего не останется. Пора за стол — жёстче, чем когда-либо.',
-    choices:[{label:'Сесть за стол ва-банк →',sub:'Переговоры на грани',puzzle:'nego2'}] },
+    title:'Отгрузка ва-банк',
+    text:'Спасение «Девять» — в одном контракте, а значит в одной отгрузке этой ночью. Кузов один, посылок гора. Уложишь всё без зазоров — груз уедет вовремя. Нет — сделка сорвётся.',
+    choices:[{label:'На склад — грузить →',sub:'Уложи всё без зазоров',puzzle:'pack'}] },
 
   /* ===================== ГЛАВА 9 · Расплата ===================== */
   ch9_intro:{ loc:'ГАЛЕРЕЯ ДОСТИЖЕНИЙ', emoji:'⚖️', tag:'Расплата', img:'ch9_01_consequences.jpg', video:'vid_ch9_reckoning.mp4', vtype:'loop',
@@ -783,6 +783,8 @@ function startPuzzle(name){
   if(name==='shifts') return startShifts();
   if(name==='safe') return startSafe();
   if(name==='maze') return startMaze();
+  if(name==='access') return startAccess();
+  if(name==='pack') return startPack();
   if(name==='scales') return startScales();
   if(name==='finale') return startFinale();
   return startBudget();
@@ -1055,15 +1057,18 @@ function submitShifts(force){
 /* ===== Головоломка «Шифр сейфа» (гл.5) — дедукция кода ===== */
 function startSafe(){
   const pool=shuffle([1,2,3,4,5,6]); const code=pool.slice(0,3);
-  state.safe={ code, guess:[1,2,3], history:[], max:6, timeLeft:pzTime(64), done:false, revealed:null };
+  state.safe={ code, guess:[1,2,3], history:[], max:6, timeLeft:pzTime(64), done:false, revealed:null, crackAds:0, cracked:false };
   renderSafe(); show('screen-puzzle'); startSimpleTimer('safe',()=>safeResult(false,true));
 }
 function safeStep(i,d){ const s=state.safe; if(s.done)return; let v=s.guess[i]+d; if(v<1)v=6; if(v>6)v=1; s.guess[i]=v; SFX.step(); renderSafe(); }
 function safeHint(){ Ads.rewarded(()=>{ const s=state.safe; if(!s||s.done)return; if(s.revealed==null) s.revealed=Math.floor(Math.random()*3); renderSafe(); }); }
+// «Взломщик»: 2 rewarded-ролика → сейф вскрывается сам. Спасает застрявших, чтобы не переигрывать главу.
+function safeCrack(){ Ads.rewarded(()=>{ const s=state.safe; if(!s||s.done)return; s.crackAds=(s.crackAds||0)+1; if(s.crackAds>=2){ s.cracked=true; s.guess=s.code.slice(); SFX.good(); return safeResult(true); } renderSafe(); }); }
 function safeSubmit(){
   const s=state.safe; if(s.done)return; const g=s.guess.slice(), code=s.code; let green=0,yellow=0;
-  g.forEach((v,i)=>{ if(v===code[i]) green++; else if(code.includes(v)) yellow++; });
-  s.history.push({g:g.slice(), green, yellow});
+  // Позиционная обратная связь (как Wordle): пег стоит ПОД своей цифрой, а не сортируется.
+  const pegs=g.map((v,i)=>{ if(v===code[i]){ green++; return '🟢'; } if(code.includes(v)){ yellow++; return '🟡'; } return '⚫'; });
+  s.history.push({g:g.slice(), green, yellow, pegs});
   if(green===3){ SFX.good(); return safeResult(true); }
   if(s.history.length>=s.max){ SFX.bad(); return safeResult(false); }
   SFX.click(); renderSafe();
@@ -1071,19 +1076,21 @@ function safeSubmit(){
 function renderSafe(){
   const s=state.safe;
   const slots=s.guess.map((v,i)=>`<div class="safe-slot"><button onclick="safeStep(${i},1)">▲</button><div class="safe-dig ${s.revealed===i?'rev':''}">${v}</div><button onclick="safeStep(${i},-1)">▼</button></div>`).join('');
-  const hist=s.history.map(h=>`<div class="safe-hrow"><span>${h.g.join(' ')}</span><span class="safe-pegs">${'🟢'.repeat(h.green)}${'🟡'.repeat(h.yellow)}${'⚫'.repeat(3-h.green-h.yellow)}</span></div>`).reverse().join('');
+  const hist=s.history.map(h=>`<div class="safe-hrow">${h.g.map((v,i)=>`<span class="safe-cell">${v}<i>${(h.pegs&&h.pegs[i])||'⚫'}</i></span>`).join('')}</div>`).reverse().join('');
   const rev=s.revealed!=null?`<div class="safe-clue">💡 Позиция ${s.revealed+1} — цифра <b>${s.code[s.revealed]}</b></div>`:'';
   $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Задача недели · шифр сейфа</div>
     <div class="pz-timer ${s.timeLeft<=8?'low':''}" id="pz-timer">${s.timeLeft} с</div>
     <h2>🔐 Шифр сейфа</h2><p>Код — 3 разные цифры (1–6). 🟢 цифра на месте · 🟡 есть, но не там · ⚫ нет. Попыток: <b>${s.history.length}/${s.max}</b>.</p>
     <div class="safe-slots">${slots}</div>${rev}
     <button class="btn btn-primary" style="min-width:230px;margin:6px 0 8px;" onclick="safeSubmit()">Проверить код →</button>
-    <button class="btn" style="min-width:230px;margin-bottom:10px;" onclick="safeHint()">💡 Открыть цифру (реклама)</button>
+    <button class="btn" style="min-width:230px;margin-bottom:8px;" onclick="safeHint()">💡 Открыть цифру (реклама)</button>
+    <button class="btn" style="min-width:230px;margin-bottom:10px;" onclick="safeCrack()">🔓 Вызвать взломщика · ${s.crackAds||0}/2 ролика</button>
     <div class="safe-hist">${hist}</div></div>`;
 }
 function safeResult(win,timeout){
   const s=state.safe; clearInterval(pzTimer); s.done=true;
   let tier,fx,msg;
+  if(s.cracked){ tier='Взлом'; fx={}; msg='Взломщик вскрыл сейф за тебя — сделку успел закрыть, но без бонуса. Идём дальше.'; simpleResult('🔐 Шифр сейфа',tier,fx,msg,'Код был: <b>'+state.safe.code.join(' ')+'</b>'); return; }
   if(win && s.history.length<=3){ tier='Блестяще'; fx={cap:8,rep:4}; msg='Сейф вскрыт с ходу — условия сделки у тебя раньше срока.'; }
   else if(win){ tier='Норма'; fx={cap:4,rep:1}; msg='Сейф поддался под конец — сделку успел закрыть впритык.'; }
   else { tier='Провал'; fx={cap:-5}; msg=timeout?'Время вышло — сейф заперт, предложение сгорело.':'Код не поддался — часть условий утекла к инвестору.'; state.flags.safeFail=true; }
@@ -1147,6 +1154,127 @@ function scalesResult(){
   simpleResult('⚖️ Весы решений',tier,fx,msg);
 }
 
+/* ===== Головоломка «Цепочка доступов» (гл.7) — память (реконструируй след крота) ===== */
+const ACCESS_LABELS=['Сервер','VPN','База','Почта','Облако','Терминал'];
+function startAccess(){
+  const n=6, maxLen=Math.min(6, 4+Math.floor((state.weekNum||7)/4)); // гл.7 → 5
+  const seq=[]; for(let i=0;i<maxLen;i++) seq.push(Math.floor(Math.random()*n));
+  state.access={ n, seq, curLen:3, input:[], showing:true, flash:-1, done:false, timeLeft:pzTime(40) };
+  renderAccess(); show('screen-puzzle'); accessPlay();
+}
+function accessPlay(){
+  const a=state.access; if(!a||a.done) return; a.showing=true; a.input=[]; a.flash=-1; renderAccess();
+  let i=0;
+  const stepShow=()=>{ if(!state.access||state.access.done) return;
+    if(i>=a.curLen){ a.flash=-1; a.showing=false; renderAccess(); startSimpleTimer('access',()=>accessResult(false,true)); return; }
+    a.flash=a.seq[i]; renderAccess(); SFX.tick();
+    setTimeout(()=>{ a.flash=-1; renderAccess(); i++; setTimeout(stepShow,240); }, 520);
+  };
+  setTimeout(stepShow,420);
+}
+function accessTap(i){
+  const a=state.access; if(!a||a.done||a.showing) return;
+  a.input.push(i); SFX.step();
+  if(i!==a.seq[a.input.length-1]){ return accessResult(false); }             // ошибка → провал
+  if(a.input.length>=a.curLen){                                              // раунд пройден
+    clearInterval(pzTimer);
+    if(a.curLen>=a.seq.length){ SFX.good(); return accessResult(true); }
+    a.curLen++; SFX.good(); renderAccess(); setTimeout(accessPlay,650);
+  } else renderAccess();
+}
+function accessHint(){ Ads.rewarded(()=>{ const a=state.access; if(!a||a.done) return; accessPlay(); }); }  // повторить показ
+function renderAccess(){
+  const a=state.access;
+  const tiles=Array.from({length:a.n},(_,i)=>`<button class="ac-tile ${a.flash===i?'lit':''}" onclick="accessTap(${i})">${ACCESS_LABELS[i]}</button>`).join('');
+  const dots=Array.from({length:a.curLen},(_,i)=>`<i class="${i<a.input.length?'on':''}"></i>`).join('');
+  $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Задача недели · цепочка доступов</div>
+    <div class="pz-timer ${a.timeLeft<=6?'low':''}" id="pz-timer">${a.showing?'смотри':a.timeLeft+' с'}</div>
+    <h2>🧠 Цепочка доступов</h2>
+    <p>Система подсветит след крота — <b>запомни порядок</b> и повтори его. Цепочка растёт: <b>${a.curLen}</b> шаг(ов).</p>
+    <div class="ac-dots">${dots}</div>
+    <div class="ac-grid">${tiles}</div>
+    <div class="ac-status">${a.showing?'⏺ Запоминай последовательность…':'▶ Повтори по памяти'}</div>
+    <button class="btn" style="min-width:230px;margin-top:8px;" onclick="accessHint()">🔁 Показать ещё раз (реклама)</button></div>`;
+}
+function accessResult(win,timeout){
+  const a=state.access; clearInterval(pzTimer); a.done=true;
+  let tier,fx,msg;
+  if(win){ tier='Блестяще'; fx={rep:7,soul:2}; msg='Ты восстановил всю цепочку доступов по памяти — сообщник крота вычислен, дыру закрыли.'; state.flags.accessSolved=true; }
+  else { tier='Провал'; fx={rep:-4,mor:-2}; msg=timeout?'Время вышло — след остыл, сообщник ушёл в тень.':'Цепочка сбилась — ложный след, крот замёл концы.'; state.flags.accessFail=true; }
+  simpleResult('🧠 Цепочка доступов',tier,fx,msg);
+}
+
+/* ===== Головоломка «Укладка склада» (гл.8) — упаковать посылки без зазоров ===== */
+const PK_SHAPES={ I3:[[0,0],[0,1],[0,2]], L3:[[0,0],[1,0],[1,1]], O4:[[0,0],[0,1],[1,0],[1,1]],
+  T4:[[0,0],[0,1],[0,2],[1,1]], L4:[[0,0],[1,0],[2,0],[2,1]], I4:[[0,0],[0,1],[0,2],[0,3]], S4:[[0,1],[0,2],[1,0],[1,1]] };
+const PK_COLORS=['#d4a24a','#6cc6a0','#7aa2ff','#e08fb0','#c9a0e0','#7ad0e0','#e0c060','#b0a0ff'];
+function pkNorm(cells){ const mr=Math.min(...cells.map(c=>c[0])), mc=Math.min(...cells.map(c=>c[1])); return cells.map(([r,c])=>[r-mr,c-mc]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]); }
+function pkRot(cells){ return pkNorm(cells.map(([r,c])=>[c,-r])); }
+function pkOris(base){ const s=[]; let cur=pkNorm(base); for(let i=0;i<4;i++){ const k=JSON.stringify(cur); if(!s.some(x=>JSON.stringify(x)===k)) s.push(cur); cur=pkRot(cur); } return s; }
+const PK_ORI={}; for(const k in PK_SHAPES) PK_ORI[k]=pkOris(PK_SHAPES[k]);
+function pkTile(R,C){
+  const g=Array.from({length:R},()=>Array(C).fill(0)), used=[], names=Object.keys(PK_SHAPES);
+  function fe(){ for(let r=0;r<R;r++)for(let c=0;c<C;c++) if(!g[r][c]) return [r,c]; return null; }
+  function solve(){ const f=fe(); if(!f) return true; const [er,ec]=f;
+    for(const nm of shuffle(names)) for(const o of shuffle(PK_ORI[nm].slice())){
+      const dr=er-o[0][0], dc=ec-o[0][1], cells=o.map(([r,c])=>[r+dr,c+dc]);
+      if(cells.every(([r,c])=>r>=0&&r<R&&c>=0&&c<C&&!g[r][c])){ cells.forEach(([r,c])=>g[r][c]=used.length+1); used.push(nm);
+        if(solve()) return true; cells.forEach(([r,c])=>g[r][c]=0); used.pop(); } }
+    return false; }
+  solve(); return used;
+}
+function startPack(){
+  const R=5,C=5; const bagNames=pkTile(R,C);
+  const bag=shuffle(bagNames).map((nm,i)=>({ id:i+1, shape:nm, ori:0, placed:false, at:null }));
+  state.pack={ R,C, grid:Array.from({length:R},()=>Array(C).fill(0)), bag, sel:0, done:false, timeLeft:pzTime(70), t0:pzTime(70) };
+  // выбрать первую непоставленную
+  state.pack.sel=bag.findIndex(p=>!p.placed);
+  renderPack(); show('screen-puzzle'); startSimpleTimer('pack',()=>packResult(false,true));
+}
+function pkCells(p){ const o=PK_ORI[p.shape][p.ori]; return o; }
+function packSelect(i){ const p=state.pack; if(p.done)return; if(p.bag[i]&&!p.bag[i].placed){ p.sel=i; SFX.step(); renderPack(); } }
+function packRotate(){ const p=state.pack; if(p.done)return; const pc=p.bag[p.sel]; if(!pc||pc.placed)return; pc.ori=(pc.ori+1)%PK_ORI[pc.shape].length; SFX.step(); renderPack(); }
+function packDrop(r,c){
+  const p=state.pack; if(p.done)return; const pc=p.bag[p.sel]; if(!pc||pc.placed) return;
+  const o=pkCells(pc), dr=r-o[0][0], dc=c-o[0][1], cells=o.map(([rr,cc])=>[rr+dr,cc+dc]);
+  if(!cells.every(([rr,cc])=>rr>=0&&rr<p.R&&cc>=0&&cc<p.C&&!p.grid[rr][cc])){ SFX.bad(); return; }  // не влезло
+  cells.forEach(([rr,cc])=>p.grid[rr][cc]=pc.id); pc.placed=true; pc.at=[r,c]; SFX.good();
+  const nx=p.bag.findIndex(x=>!x.placed); p.sel=nx;
+  if(nx<0 || p.grid.flat().every(x=>x)) return packResult(true);
+  renderPack();
+}
+function packUndo(){ const p=state.pack; if(p.done)return; const placed=p.bag.filter(x=>x.placed); if(!placed.length)return;
+  const pc=placed[placed.length-1]; p.grid=p.grid.map(row=>row.map(v=>v===pc.id?0:v)); pc.placed=false; pc.at=null; p.sel=p.bag.indexOf(pc); SFX.step(); renderPack(); }
+function packMini(p){ const o=PK_ORI[p.shape][p.ori], mr=Math.max(...o.map(c=>c[0]))+1, mc=Math.max(...o.map(c=>c[1]))+1;
+  let s=`<span class="pk-mini" style="grid-template-columns:repeat(${mc},9px);grid-template-rows:repeat(${mr},9px);">`;
+  const set=new Set(o.map(([r,c])=>r+'_'+c));
+  for(let r=0;r<mr;r++)for(let c=0;c<mc;c++) s+=`<i class="${set.has(r+'_'+c)?'f':''}"></i>`;
+  return s+'</span>'; }
+function renderPack(){
+  const p=state.pack, col=id=>PK_COLORS[(id-1)%PK_COLORS.length];
+  let board='';
+  for(let r=0;r<p.R;r++)for(let c=0;c<p.C;c++){ const v=p.grid[r][c];
+    board+=`<button class="pk-cell ${v?'fill':''}" ${v?'':`onclick="packDrop(${r},${c})"`} style="${v?`background:${col(v)};border-color:${col(v)};`:''}"></button>`; }
+  const tray=p.bag.map((pc,i)=> pc.placed?'' :`<button class="pk-piece ${i===p.sel?'sel':''}" onclick="packSelect(${i})" style="--pc:${col(pc.id)}">${packMini(pc)}</button>`).join('');
+  const left=p.bag.filter(x=>!x.placed).length;
+  $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Задача недели · укладка склада</div>
+    <div class="pz-timer ${p.timeLeft<=8?'low':''}" id="pz-timer">${p.timeLeft} с</div>
+    <h2>📦 Укладка склада</h2>
+    <p>Уложи все посылки в кузов <b>без зазоров</b>. Тап по детали — выбрать, «⟳» — повернуть, тап по клетке — поставить (левый-верхний угол детали). Осталось: <b>${left}</b>.</p>
+    <div class="pk-board" style="grid-template-columns:repeat(${p.C},1fr);">${board}</div>
+    <div class="pk-ctrls"><button class="btn" onclick="packRotate()">⟳ Повернуть</button><button class="btn" onclick="packUndo()">↶ Убрать</button></div>
+    <div class="pk-tray">${tray||'<span style=\"color:#8a8f9e\">Все уложены — проверяем…</span>'}</div></div>`;
+}
+function packResult(win,timeout){
+  const p=state.pack; clearInterval(pzTimer); p.done=true;
+  const full=p.grid.flat().every(x=>x); win=win&&full;
+  let tier,fx,msg;
+  if(win && p.timeLeft>=p.t0*0.4){ tier='Блестяще'; fx={cap:9,rep:3}; msg='Кузов уложен плотно и с запасом времени — отгрузка ушла раньше срока.'; state.flags.packGreat=true; }
+  else if(win){ tier='Норма'; fx={cap:5}; msg='Всё влезло впритык — груз уехал, склад дышит.'; }
+  else { tier='Провал'; fx={cap:-5}; msg=timeout?'Время вышло — часть посылок не влезла, отгрузку сорвали.':'Кузов не сошёлся — зазоры съели место, груз застрял.'; state.flags.packFail=true; }
+  simpleResult('📦 Укладка склада',tier,fx,msg);
+}
+
 /* ===== общий таймер и результат простых головоломок ===== */
 function startSimpleTimer(key,onOut){
   clearInterval(pzTimer);
@@ -1176,7 +1304,7 @@ function simpleResult(name,tier,fx,msg,extra){
   if(tier==='Провал') SFX.bad(); else SFX.good();
   applyFx(fx); renderMetrics();
   state.flags.puzzleLine=name+' — '+tier+': '+msg;
-  const icon=tier==='Блестяще'?'🏆':tier==='Норма'?'👍':'⚠️';
+  const icon=tier==='Блестяще'?'🏆':tier==='Норма'?'👍':tier==='Взлом'?'🔓':'⚠️';
   $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Результат — ${tier}</div>
     <h2><span class="emo">${icon}</span>${name.replace(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})️?\s*/u,'<span class="emo">$&</span>')}</h2><p>${msg}</p>${extra?`<div class="anom-reveal">${extra}</div>`:''}
     <div class="stat-row">${Object.keys(fx).map(k=>`${METRIC_NAMES[k]} ${fx[k]>0?'+':''}${fx[k]}`).join(' · ')}</div>
@@ -1226,6 +1354,29 @@ function idealGap(){
     return '<div class="ideal"><div class="ideal-h">Ты был в одном шаге от «Тёплого дома».</div><div class="ideal-f">Чуть иначе распорядись финалом — и лучшая концовка твоя.</div></div>';
   return `<div class="ideal"><div class="ideal-h">До идеальной концовки «Тёплый дом» не хватило:</div>${gaps.map(g=>`<div class="ideal-r">${g}</div>`).join('')}<div class="ideal-f">Переиграй и собери всё разом — человечность и успех вместе.</div></div>`;
 }
+// Супер-награда: тизер 2-го сезона — только за сильную игру (лучшая концовка или высокий скор).
+function teaserBlock(){
+  const great = state.flags.endingKey==='home' || state.flags.endingKey==='empire' || score()>=300;
+  if(!great) return '';
+  return `<div class="teaser">
+    <div class="teaser-kick">✦ СУПЕР-НАГРАДА ЗА СИЛЬНУЮ ИГРУ ✦</div>
+    <video class="cam-video" playsinline autoplay loop muted src="${CLIP_DIR}vid_teaser_s2.mp4?v=1" style="width:100%;max-height:38vh;border-radius:14px;margin:8px 0;" onerror="this.closest('.teaser').style.display='none'"></video>
+    <div class="teaser-t">«ДЕВЯТЬ» · СЕЗОН 2 — в разработке</div>
+    <div class="teaser-s">Ты прошёл достойно — и увидел то, чего не увидят остальные. История продолжится.</div>
+  </div>`;
+}
+// Вердикт команды — оплата беты ch9_team («за кем пойдут»): показываем ИТОГ их выбора, а не пустоту.
+function teamVerdict(){
+  const f=state.flags, loyal=loyalCount(), lost=lostCount(), ek=f.endingKey;
+  let v;
+  if(ek==='revolution') v='Собравшись в атриуме, команда сделала выбор — и выбрала не тебя. Большинство ушло за Феликсом: кредит доверия, что ты просил, иссяк.';
+  else if(ek==='crash') v='Решать уже было нечего — команда разошлась сама, каждый спасал себя. Тот раскол в атриуме дорос до пустого офиса.';
+  else if(f.gaveTruth || loyal>=5) v='Команда собралась и высказалась в открытую: они идут за тобой. Раскол, что зрел в атриуме, затянулся — правда, которую ты им дал, оказалась сильнее слухов.';
+  else if(f.gaveOrders || lost>=3) v='Команда проголосовала молчанием: одни остались из страха, другие уже смотрят на сторону. Кресло за тобой — но не их сердца.';
+  else if(f.gaveSpin) v='Красивые слова купили тебе время: команда пошла за тобой, но кто-то уже понял, где была полуправда, и затаил это.';
+  else v='Команда так и осталась расколотой надвое — одни за тебя горой, другие точат ножи. Ты ведёшь их, но по тонкому льду.';
+  return `<div class="verdict"><b>Как решила команда:</b> ${v}</div>`;
+}
 function heroEpilogues(){
   const r=state.rel, f=state.flags, L=[];
   const ep=(id,warm,cold,neu)=>{ const v=r[id]||0; L.push(`<b>${NAME[id]}:</b> ${v>=2?warm:v<=-2?cold:neu}`); };
@@ -1234,7 +1385,12 @@ function heroEpilogues(){
   ep('grisha', f.grishaSaved?'благодарен по гроб — ты спас его семью и здоровье.':'тянет лямку дальше, преданный, как и был.', f.grishaBroken?'сломался и уволился — тихо, без упрёков, как и жил.':'выгорел, но остался, потому что больше некуда.','держит логистику, незаметный и незаменимый.');
   ep('vasilisa','твоя главная опора — с ней «Девять» устоит перед чем угодно.','ушла, забрав с собой половину сильной команды.','осталась профессионалом на дистанции.');
   ep('bagira', f.exposeBagira?'разоблачена и повержена — её игра окончена.':(f.dealBagira?'осталась рядом — опасный союзник, которому ты теперь должен.':'исчезла так же красиво, как появилась, затаив своё.'),'стала твоим злейшим врагом — и это надолго.','так и осталась загадкой, чью сторону выбрала.');
-  ep('cleo', f.madeAmends?'сняла маску и стала настоящей — благодарна, что ты увидел человека.':'блестит дальше, лицо бренда без трещин.','ушла, унеся свой хайп и обиду к конкурентам.','осталась глянцевой витриной компании.');
+  ep('cleo',
+    f.madeAmends
+      ? 'сняла маску и осталась настоящей. Та тайная встреча с конкурентом, что попала на камеру, была её отказом уйти: ей предлагали контракт мечты — она выбрала «Девять» и тебя.'
+      : 'осталась лицом бренда. Помнишь конверт для чужой команды? Это был не слив, а торг ради тебя — она блефовала конкурентом, чтобы выбить условия получше.',
+    'ушла к конкурентам — тот самый конверт был её выходным билетом. Ты так и не разглядел человека за глянцем, и она забрала свой хайп с собой.',
+    'осталась глянцевой витриной. Кем она была под макияжем и на чьей стороне на самом деле — ты так и не узнал.');
   ep('murka', f.careProgram?'счастлива: ты построил компанию, где людей берегут — её мечта сбылась.':'тянет всех на себе, тихо надеясь, что однажды спасут и её.','выгорела и ушла — душа коллектива погасла.','остаётся тем, к кому идут за теплом.');
   ep('tisha', f.romanceTS?'нашёл с Соней тихое счастье — гений наконец улыбается.':'построил тебе лучшую платформу в отрасли.','замкнулся и ушёл в стартап, где его слышат.','молчит и держит всю технологию на своих плечах.');
   ep('marsel', f.romanceMV?'снова счастлив с Василисой — второй шанс, который ты подарил.':(f.trustMarsel?'воскрес как звезда продаж — ты в него поверил не зря.':'нашёл своё место, уже без страха оказаться лишним.'),'сломлен — ты добил то, что и так трещало.','доигрывает свою партию с достоинством.');
@@ -1266,10 +1422,12 @@ function startFinale(){
       <p>${e.d}</p>
       <div class="stat-row">💰 ${Math.round(state.m.cap)} · ⭐ ${Math.round(state.m.rep)} · ❤️ ${Math.round(state.m.mor)} · 🔮 ${Math.round(state.m.soul)}</div>
       <div class="end-score">Скор: <b>${score()}</b> / 400 · лояльных: ${loyalCount()} · потеряно: ${lostCount()}</div>
+      ${teamVerdict()}
       <div class="stand"><b>Что стало с командой:</b></div>
       ${eps}
       <div class="cant">Ты прожил девять судеб. Такова цена кресла.</div>
       ${idealGap()}
+      ${teaserBlock()}
       <button class="btn" style="min-width:240px;margin:14px 0 10px;" onclick="shareWeek()">↗ Поделиться финалом</button>
       <button class="btn btn-primary" style="min-width:240px;" onclick="hardReset()">↺ Прожить заново — другим боссом</button>
     </div>`;
