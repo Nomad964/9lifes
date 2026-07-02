@@ -463,7 +463,7 @@ const SAVE_KEY='devyat9_slice_save';
 let state=null;
 const $=id=>document.getElementById(id);
 const clamp=v=>Math.max(0,Math.min(100,v));
-function fresh(){return{cur:'company',m:{...START},flags:{},rel:{},weekNum:1};}
+function fresh(){return{cur:'company',m:{...START},flags:{},rel:{},weekNum:1,awaitingNext:false,lockArmedFor:null};}
 function load(){try{return JSON.parse(localStorage.getItem(SAVE_KEY));}catch(e){return null;}}
 function save(){if(state)localStorage.setItem(SAVE_KEY,JSON.stringify(state));flashSaved();}
 
@@ -476,19 +476,62 @@ function show(id){
   requestAnimationFrame(()=>{ try{ t.scrollTop=0; const a=$('app'); if(a)a.scrollTop=0; }catch(e){} });
 }
 
-function renderMetrics(){for(const k of['cap','rep','mor','soul']){$('v-'+k).textContent=Math.round(state.m[k]);$('b-'+k).style.width=clamp(state.m[k])+'%';}}
+/* Зоны метрик: во время главы показываем СЛОВО, а не точное число (интрига + меньше мин-макса) */
+function metricZone(v){
+  if(v>=60) return {w:'крепко',   c:'#4bbf87'};
+  if(v>=40) return {w:'норма',    c:'#D4AF6A'};
+  if(v>=20) return {w:'шатко',    c:'#e0954a'};
+  return              {w:'на грани', c:'#e0555f'};
+}
+function renderMetrics(){
+  for(const k of['cap','rep','mor','soul']){
+    const v=state.m[k], z=metricZone(v), vs=$('v-'+k), b=$('b-'+k);
+    vs.textContent=z.w; vs.style.color=z.c; vs.style.fontSize='11.5px'; vs.style.fontFamily="'Oswald',sans-serif"; vs.style.letterSpacing='.3px';
+    b.style.width=clamp(v)+'%'; b.style.background=z.c;
+    const card=vs.parentNode && vs.parentNode.parentNode ? vs.parentNode.parentNode : null;
+    if(card){ if(v<20) card.classList.add('danger'); else card.classList.remove('danger'); }
+  }
+}
 
 const NAME={baron:'Барон',sonya:'Соня',felix:'Феликс',grisha:'Гриша',vasilisa:'Василиса',bagira:'Багира',cleo:'Клео',murka:'Мурка',tisha:'Тиша',marsel:'Марсель'};
 function showFloats(fx,rel){const box=$('floats');box.innerHTML='';const items=[];if(fx)for(const k in fx)items.push(`${METRIC_NAMES[k]} ${fx[k]>0?'+':''}${fx[k]}`);if(rel)for(const r in rel)items.push(`${NAME[r]||r} ${rel[r]>0?'+':''}${rel[r]}`);items.forEach((t,i)=>{const el=document.createElement('div');el.className='float';el.textContent=t;el.style.animationDelay=(i*0.12)+'s';box.appendChild(el);});}
 
+const NEG_AMP=1.35, POS_DAMP=0.7;   // минусы бьют сильнее, плюсы скромнее → метрики не упираются в 100, трейд-офф реальный
+function applyFx(fx){ const eff={}; for(const k in (fx||{})){ let v=fx[k]; v = v<0 ? Math.round(v*NEG_AMP) : Math.max(1,Math.round(v*POS_DAMP)); eff[k]=v; state.m[k]=clamp(state.m[k]+v); } return eff; }
 function applyChoice(ch){
-  if(ch.fx)for(const k in ch.fx)state.m[k]=clamp(state.m[k]+ch.fx[k]);
+  const eff=applyFx(ch.fx);                        // фактически применённые изменения (для флоатов)
   if(ch.rel)for(const r in ch.rel)state.rel[r]=(state.rel[r]||0)+ch.rel[r];
   if(ch.set)for(const f in ch.set)state.flags[f]=ch.set[f];
-  showFloats(ch.fx,ch.rel); renderMetrics();
+  showFloats(eff,ch.rel); renderMetrics();
+  // мягкий проигрыш: метрика упала в 0 → тематический Game Over (только с 3-й главы; гл.1–2 — зацепка)
+  const dead=deadMetric();
+  if(dead && (state.weekNum||1)>=3) return setTimeout(()=>gameOver(dead),450);
   if(ch.puzzle)return startPuzzle(ch.puzzle);
   if(ch.end)return endSlice();
   state.cur=ch.next; save(); setTimeout(renderEvent,400);
+}
+function deadMetric(){ for(const k of['cap','rep','mor','soul']) if(state.m[k]<=0) return k; return null; }
+function gameOver(k){
+  try{SFX.bad();}catch(e){}
+  const L={
+    cap:{t:'💥 Банкротство', vid:'vid_lose_cap.mp4', d:'Касса пуста. «Девять» не может платить по счетам — совет объявляет банкротство и снимает тебя с поста. Игра окончена.'},
+    rep:{t:'📉 Крах репутации', vid:'vid_lose_rep.mp4', d:'Имя компании уничтожено, клиенты и партнёры бегут. Совет срочно ищет замену — и это уже не ты. Игра окончена.'},
+    mor:{t:'🔥 Бунт', vid:'vid_lose_mor.mp4', d:'Команда выгорела и восстала. Люди уходят пачками, оставшиеся требуют твоей отставки. Тебя свергают. Игра окончена.'},
+    soul:{t:'🕳️ Бездушная машина', vid:'vid_lose_soul.mp4', d:'От компании осталась пустая оболочка без души и доверия. Совет ставит другого «эффективного» — а ты уходишь ни с чем. Игра окончена.'}
+  }[k];
+  localStorage.removeItem(SAVE_KEY);
+  $('screen-end').innerHTML=`<div class="end-wrap">
+    <div class="end-kicker">Глава ${state.weekNum||1} · проигрыш</div>
+    <video class="cam-video" playsinline autoplay loop muted src="${CLIP_DIR}${L.vid}?v=1" style="max-height:34vh;margin:0 auto 14px;" onerror="this.style.display='none'"></video>
+    <h2>${L.t}</h2>
+    <p>${L.d}</p>
+    <div class="stat-row">💰 ${Math.round(state.m.cap)} · ⭐ ${Math.round(state.m.rep)} · ❤️ ${Math.round(state.m.mor)} · 🔮 ${Math.round(state.m.soul)}</div>
+    <p class="end-note">Баланс — это всё. Одну чашу нельзя топить ради другой.</p>
+    <button class="btn" style="min-width:240px;margin-bottom:10px;" onclick="Ads.rewarded(replayChapter)">🔄 Переиграть неделю (реклама)</button>
+    <button class="btn btn-primary" style="min-width:240px;" onclick="hardReset()">↺ Начать заново</button>
+  </div>`;
+  const v=$('screen-end').querySelector('video'); if(v) v.play().catch(()=>{});
+  show('screen-end');
 }
 
 function weekText(){const f=state.flags;let p=['Команда расходится по домам. Ты впервые один в тёмном офисе и подводишь итог.'];
@@ -728,7 +771,7 @@ function startBudget(){
 /* ===== Головоломка №2: «Переговоры» (тактика: куш vs терпение) ===== */
 function startNego(hard){
   const h=!!hard;
-  state.nego={ profit:0, patience:h?62:80, rounds:0, maxRounds:h?5:6, timeLeft:h?32:40, reveal:false, lastTxt:'', hard:h };
+  state.nego={ profit:0, patience:h?62:80, rounds:0, maxRounds:h?5:6, timeLeft:pzTime(h?32:40), reveal:false, lastTxt:'', hard:h };
   renderNego(); show('screen-puzzle'); startNegoTimer();
 }
 function startNegoTimer(){
@@ -792,7 +835,8 @@ function negoResult(mode){
     else { tier='Норма'; fx={cap:Math.round(p/7)+1,rep:1}; msg=`Сделка на ${p}. Скромно, но в плюс.`; SFX.good(); }
     if(mode==='time') msg='Время вышло. '+msg;
   }
-  for(const k in fx) state.m[k]=clamp(state.m[k]+fx[k]);
+  if(puzzleFailed(tier)) return puzzleFailChapter();
+  applyFx(fx);
   state.flags.puzzleLine='🤝 Переговоры — '+tier+': '+msg;
   const icon=tier==='Блестяще'?'🏆':tier==='Норма'?'👍':'⚠️';
   $('screen-puzzle').innerHTML=`<div class="pz-wrap">
@@ -847,8 +891,9 @@ function submitPuzzle(force){
   if(dev<=20){ tier='Блестяще'; fx={cap:8,mor:5}; msg='Бюджет лёг идеально — отделы довольны, деньги работают.'; state.flags.budgetGreat=true; }
   else if(dev<=50){ tier='Норма'; fx={cap:3}; msg='Бюджет свёрстан сносно — без провалов, но и без блеска.'; }
   else { tier='Провал'; fx={cap:-5,mor:-4}; msg='Деньги ушли не туда (или сгорели) — отделы недовольны, касса просела.'; state.flags.budgetFail=true; }
+  if(puzzleFailed(tier)) return puzzleFailChapter();
   if(tier==='Провал') SFX.bad(); else SFX.good();
-  for(const k in fx) state.m[k]=clamp(state.m[k]+fx[k]);
+  applyFx(fx);
   state.flags.puzzleLine='🧩 Бюджет недели — '+tier+': '+msg;
   const icon=tier==='Блестяще'?'🏆':tier==='Норма'?'👍':'⚠️';
   $('screen-puzzle').innerHTML=`<div class="pz-wrap">
@@ -881,7 +926,7 @@ function startAnomaly(mode){
     const night=(i===mole||i===dNight), foreign=(i===mole||i===dForeign), big=(i===mole||i===dBig);
     return { name:s.name, time:night?pick(nightT):pick(dayT), target:foreign?'клиентская база':s.own, vol:big?pick(bigV):pick(normV), cleared:false };
   });
-  state.anomaly={ rows, answer:mole, picked:null, timeLeft:(mode==='grid'?30:35), done:false, mode:(mode||'audit') };
+  state.anomaly={ rows, answer:mole, picked:null, timeLeft:pzTime(mode==='grid'?30:35), done:false, mode:(mode||'audit') };
   renderAnomaly(); show('screen-puzzle'); startAnomalyTimer();
 }
 function startAnomalyTimer(){
@@ -928,8 +973,9 @@ function anomalyResult(pick,timeout){
   if(correct && fast){ tier='Блестяще'; fx={rep:8,soul:3}; msg=`Ты вычислил ${who} мгновенно: ночной вход, чужая база, гигабайты наружу. Дыру перекрыли, данные спасли.`; state.flags.moleCaught=true; }
   else if(correct){ tier='Норма'; fx={rep:4}; msg=`Ты нашёл ${who} — но пока думал, часть базы уже утекла. Дыру закрыли, осадок остался.`; state.flags.moleCaught=true; }
   else { tier='Провал'; fx={rep:-6,soul:-2}; msg=timeout?`Время вышло — ${who} успел уйти вместе с базой. Дыру не закрыли.`:`Ты указал не на того. Настоящий ${who} тихо ушёл, прихватив данные.`; state.flags.moleEscaped=true; }
+  if(puzzleFailed(tier)) return puzzleFailChapter();
   if(tier==='Провал') SFX.bad(); else SFX.good();
-  for(const k in fx) state.m[k]=clamp(state.m[k]+fx[k]);
+  applyFx(fx);
   renderMetrics();
   state.flags.puzzleLine=(grid?'🧮 Аудит-сетка — ':'🔎 Аудит доступов — ')+tier+': '+msg;
   const icon=tier==='Блестяще'?'🏆':tier==='Норма'?'👍':'⚠️';
@@ -954,7 +1000,7 @@ function startShifts(){
   let raw=DAYS.map(()=>1+Math.floor(Math.random()*4)), s=raw.reduce((a,b)=>a+b,0);
   let need=raw.map(w=>Math.max(1,Math.round(TOTAL*w/s)));
   let diff=TOTAL-need.reduce((a,b)=>a+b,0); need[0]+=diff; if(need[0]<1){ need[1]+=need[0]-1; need[0]=1; }
-  state.shifts={ days:DAYS, need, alloc:DAYS.map(()=>0), reveal:DAYS.map(()=>false), total:TOTAL, timeLeft:30, done:false };
+  state.shifts={ days:DAYS, need, alloc:DAYS.map(()=>0), reveal:DAYS.map(()=>false), total:TOTAL, timeLeft:pzTime(30), done:false };
   renderShifts(); show('screen-puzzle'); startSimpleTimer('shifts',()=>submitShifts(true));
 }
 function shiftsSum(){ return state.shifts.alloc.reduce((a,b)=>a+b,0); }
@@ -985,7 +1031,7 @@ function submitShifts(force){
 /* ===== Головоломка «Шифр сейфа» (гл.5) — дедукция кода ===== */
 function startSafe(){
   const pool=shuffle([1,2,3,4,5,6]); const code=pool.slice(0,3);
-  state.safe={ code, guess:[1,2,3], history:[], max:6, timeLeft:70, done:false, revealed:null };
+  state.safe={ code, guess:[1,2,3], history:[], max:6, timeLeft:pzTime(64), done:false, revealed:null };
   renderSafe(); show('screen-puzzle'); startSimpleTimer('safe',()=>safeResult(false,true));
 }
 function safeStep(i,d){ const s=state.safe; if(s.done)return; let v=s.guess[i]+d; if(v<1)v=6; if(v>6)v=1; s.guess[i]=v; SFX.step(); renderSafe(); }
@@ -1026,7 +1072,7 @@ function startMaze(){
   const n=people.length, boss=Math.floor(Math.random()*n), others=shuffle([...Array(n).keys()].filter(i=>i!==boss));
   const dMeet=others[0],dRec=others[1],dMot=others[2];
   const rows=people.map((nm,i)=>({ name:nm, meet:(i===boss||i===dMeet), rec:(i===boss||i===dRec), mot:(i===boss||i===dMot), cleared:false }));
-  state.maze={ rows, answer:boss, timeLeft:30, done:false };
+  state.maze={ rows, answer:boss, timeLeft:pzTime(30), done:false };
   renderMaze(); show('screen-puzzle'); startSimpleTimer('maze',()=>mazeResult(-1,true));
 }
 function mazeHint(){ Ads.rewarded(()=>{ const m=state.maze; if(!m||m.done)return; const d=m.rows.map((r,i)=>i).filter(i=>i!==m.answer && !m.rows[i].cleared); if(d.length){ m.rows[d[Math.floor(Math.random()*d.length)]].cleared=true; renderMaze(); } }); }
@@ -1052,7 +1098,7 @@ function mazeResult(pick,timeout){
 
 /* ===== Головоломка «Весы решений» (гл.9) — сбалансируй чаши ===== */
 function startScales(){
-  state.scales={ left:Math.round(state.m.cap/12), right:Math.round(state.m.soul/12), moves:8, timeLeft:30, done:false };
+  state.scales={ left:Math.round(state.m.cap/12), right:Math.round(state.m.soul/12), moves:8, timeLeft:pzTime(30), done:false };
   renderScales(); show('screen-puzzle'); startSimpleTimer('scales',()=>scalesResult());
 }
 function addWeight(side){ const s=state.scales; if(s.done||s.moves<=0)return; if(side==='left')s.left++; else s.right++; s.moves--; SFX.step(); if(s.moves<=0){ renderScales(); return; } renderScales(); }
@@ -1087,9 +1133,24 @@ function startSimpleTimer(key,onOut){
     if(p.timeLeft<=0){ clearInterval(pzTimer); onOut(); }
   },1000);
 }
+/* Сложность растёт по главам: меньше времени к финалу (не ниже 14с) */
+function pzTime(base){ return Math.max(14, Math.round(base - ((state.weekNum||1)-1)*1.4)); }
+/* Провал задачи недели (с 3-й главы) = проигрыш → переиграть главу с начала */
+function puzzleFailChapter(){
+  try{SFX.bad();}catch(e){} clearInterval(pzTimer);
+  $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Провал · Глава ${state.weekNum||1}</div>
+    <h2>⚠️ Задача не решена</h2>
+    <p>Ты не справился с задачей недели — без неё главу не закрыть. Придётся переиграть её с начала.</p>
+    <button class="btn btn-primary" style="min-width:230px;margin-bottom:10px;" onclick="replayChapter()">🔄 Переиграть главу</button>
+    <button class="btn" style="min-width:230px;" onclick="hardReset()">↺ Начать заново</button></div>`;
+  show('screen-puzzle');
+}
+function puzzleFailed(tier){ return tier==='Провал' && (state.weekNum||1)>=3; }
+
 function simpleResult(name,tier,fx,msg,extra){
+  if(puzzleFailed(tier)) return puzzleFailChapter();
   if(tier==='Провал') SFX.bad(); else SFX.good();
-  for(const k in fx) state.m[k]=clamp(state.m[k]+fx[k]); renderMetrics();
+  applyFx(fx); renderMetrics();
   state.flags.puzzleLine=name+' — '+tier+': '+msg;
   const icon=tier==='Блестяще'?'🏆':tier==='Норма'?'👍':'⚠️';
   $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Результат — ${tier}</div>
@@ -1105,13 +1166,13 @@ function computeEnding(){
   const m=state.m, f=state.flags, loyal=loyalCount(), lost=lostCount();
   const felixPath=f.gaveFelix||f.sideFelix||f.felixPlan||f.poaching;
   if(m.cap<=0||m.rep<=0||m.mor<=0||m.soul<=0||m.cap<25)
-    return {key:'crash', t:'💥 Крах', art:'ch8_01_crisis.jpg',
+    return {key:'crash', t:'💥 Крах', art:'ch8_01_crisis.jpg', video:'vid_lose_cap.mp4',
       d:'«Девять» не выдержала. Метрики просели в ноль, компания разваливается на глазах, а ты остаёшься на пепелище того, что построил Барон. Иногда амбиции стоят всего.'};
   if(felixPath && m.mor<45)
     return {key:'revolution', t:'🔥 Революция', art:'ch6_01_felix.jpg', video:'vid_ch6_felix.mp4',
       d:'Ты вырастил Феликса — и он вырос через твою голову. При низком боевом духе молодые пошли за ним, а не за тобой. Совет выбирает его. Ты уходишь, аплодируя чужой победе.'};
   if(m.soul>=75 && m.mor>=70 && m.cap>=60 && loyal>=5)
-    return {key:'home', t:'🏆 Тёплый дом', art:'ch10_04_ending.jpg', video:'vid_ch10_ending.mp4',
+    return {key:'home', t:'🏆 Тёплый дом', art:'ch10_04_ending.jpg', video:'vid_win_home.mp4', video2:'vid_ch10_ending.mp4',
       d:'Ты сделал невозможное: компания-семья, где людей ценят как людей — и при этом крепкий, устойчивый успех. Команда пойдёт за тобой в огонь. Барон смотрит с гордостью: ты превзошёл его.'};
   if(m.cap>=80 && m.rep>=70 && m.soul<50)
     return {key:'empire', t:'🏙️ Империя', art:'ch10_05_ending_cold.jpg', video:'vid_ch10_ending.mp4',
@@ -1141,8 +1202,10 @@ function startFinale(){
   const e=computeEnding(); state.flags.endingKey=e.key;
   localStorage.removeItem(SAVE_KEY);
   const eps=heroEpilogues().map(l=>`<div class="cons">${l}</div>`).join('');
-  const art = e.video
-    ? `<video class="cam-video" playsinline autoplay loop muted src="${CLIP_DIR}${e.video}?v=3" style="max-height:34vh;margin:0 auto 14px;"></video>`
+  const vid1 = e.video ? `<video class="cam-video" playsinline autoplay loop muted src="${CLIP_DIR}${e.video}?v=3" style="max-height:34vh;margin:0 auto 10px;" onerror="this.style.display='none'"></video>` : '';
+  const vid2 = e.video2 ? `<video class="cam-video" playsinline autoplay loop muted src="${CLIP_DIR}${e.video2}?v=3" style="max-height:26vh;margin:0 auto 14px;" onerror="this.style.display='none'"></video>` : '';
+  const art = (e.video||e.video2)
+    ? (vid1+vid2)
     : `<img src="${ASSET_DIR}${e.art}?v=3" style="width:100%;max-height:34vh;object-fit:cover;border-radius:16px;margin-bottom:14px;">`;
   $('screen-end').innerHTML=`<div class="end-wrap">
       <div class="end-kicker">Финал · Глава 10 · твоя концовка</div>
@@ -1157,11 +1220,39 @@ function startFinale(){
       <button class="btn" style="min-width:240px;margin:14px 0 10px;" onclick="shareWeek()">↗ Поделиться финалом</button>
       <button class="btn btn-primary" style="min-width:240px;" onclick="hardReset()">↺ Прожить заново — другим боссом</button>
     </div>`;
-  const v=$('screen-end').querySelector('video'); if(v){ v.play().catch(()=>{}); }
+  $('screen-end').querySelectorAll('video').forEach(v=>{ v.play().catch(()=>{}); });
   show('screen-end');
 }
 
+/* ===== Ежедневный гейт глав (с 3-й) ===== */
+const LOCK_KEY='devyat9_unlock', LOCK_MS=20*3600*1000;   // ~сутки
+function chapterLocked(nextCh){ if(nextCh<3) return false; const u=+localStorage.getItem(LOCK_KEY)||0; return Date.now()<u; }
+function lockRemain(){ const u=+localStorage.getItem(LOCK_KEY)||0; return Math.max(0,u-Date.now()); }
+function fmtRemain(ms){ const h=Math.floor(ms/3600000), m=Math.floor(ms%3600000/60000); return (h>0?h+' ч ':'')+m+' мин'; }
+let lockTimer=null;
+function startLockCountdown(nextCh){
+  clearInterval(lockTimer);
+  lockTimer=setInterval(()=>{ const el=$('lock-c'); if(!el){ clearInterval(lockTimer); return; }
+    const r=lockRemain(); if(r<=0){ clearInterval(lockTimer); endSlice(); return; } el.textContent='через '+fmtRemain(r); },30000);
+}
+function openNextNow(){ localStorage.removeItem(LOCK_KEY); state.lockArmedFor=null; clearInterval(lockTimer); nextChapter(); }
+
+/* ===== Разбор метрик в итогах ===== */
+function metricRevealBlock(){
+  const M=[['cap','💰 Капитал'],['rep','⭐ Репутация'],['mor','❤️ Мораль'],['soul','🔮 Душа']];
+  const rows=M.map(([k,nm])=>{ const v=Math.round(state.m[k]), z=metricZone(v);
+    return `<div class="mrev-row"><span>${nm}</span><span style="color:${z.c};font-family:'Oswald'">${v} · ${z.w}</span></div>`; }).join('');
+  return `<div class="mrev">${rows}</div>
+    <div class="mhint">💰 выживание · ⭐ рынок и клиенты · ❤️ дух команды · 🔮 человечность и «хорошие» финалы. <b>Любая метрика в 0 — проигрыш.</b></div>`;
+}
+function redWarnings(){
+  const W={cap:'💰 Капитал на грани — ещё удар, и банкротство.',rep:'⭐ Репутация на грани — ещё скандал, и тебя снимут.',
+    mor:'❤️ Мораль на грани — ещё нажим, и команда взбунтуется.',soul:'🔮 Душа почти на нуле — компания стынет в бездушную машину.'};
+  const L=[]; for(const k of['cap','rep','mor','soul']) if(state.m[k]<20) L.push(W[k]); return L;
+}
+
 function endSlice(){
+  const dead=deadMetric(); if(dead && (state.weekNum||1)>=3) return gameOver(dead);   // страховка: смерть и после головоломки (с 3-й главы)
   const o=outcome(), st=standings(), wk=state.weekNum||1, more=wk<MAX_CHAPTER;
   const cons=consequenceLines().map(l=>`<div class="cons">${l}</div>`).join('');
   let stand='';
@@ -1171,12 +1262,28 @@ function endSlice(){
       (st.cold.length?`🔻 Затаили обиду — ${st.cold.join(', ')}.`:'')+
       `<div class="cant">Для всех хорошим не будешь — и это нормально.</div></div>`;
   }
-  const note = more
-    ? 'Твои решения уже тянут последствия в следующую неделю. Дальше — сложнее.'
-    : 'Каждое твоё решение ведёт к одной из развязок. История ещё впереди.';
-  const mainBtn = more
-    ? `<button class="btn btn-primary" style="min-width:240px;" onclick="nextChapter()">Глава ${wk+1} →</button>`
-    : `<button class="btn btn-primary" style="min-width:240px;" onclick="hardReset()">↺ Пройти заново</button>`;
+  const warn=redWarnings();
+  const warnBlock = warn.length ? `<div class="warnbox"><b>⚠️ Опасная зона:</b>${warn.map(w=>`<div>${w}</div>`).join('')}</div>` : '';
+  const traj = `<div class="traj">📈 Держишь курс на концовку: <b>${computeEnding().t}</b></div>`;
+
+  // ежедневный замок: армируем один раз при завершении главы, для глав 3+
+  if(more && wk>=2 && state.lockArmedFor!==wk){ state.lockArmedFor=wk; if((wk+1)>=3) localStorage.setItem(LOCK_KEY, Date.now()+LOCK_MS); }
+  let nextArea;
+  if(more){
+    if(chapterLocked(wk+1)){
+      nextArea=`<div class="lockp">
+        <div class="lock-t">🔒 Глава ${wk+1} откроется завтра</div>
+        <div class="lock-c" id="lock-c">через ${fmtRemain(lockRemain())}</div>
+        <div class="lock-s">Заходи каждый день за новой главой — или открой сейчас за рекламу.</div>
+        <button class="btn btn-primary" style="min-width:250px;" onclick="Ads.rewarded(openNextNow)">▶ Открыть Главу ${wk+1} сейчас (реклама)</button>
+      </div>`;
+    } else {
+      nextArea=`<button class="btn btn-primary" style="min-width:240px;" onclick="nextChapter()">Глава ${wk+1} →</button>`;
+    }
+    state.awaitingNext=true;
+  } else {
+    nextArea=`<button class="btn btn-primary" style="min-width:240px;" onclick="hardReset()">↺ Пройти заново</button>`;
+  }
   $('screen-end').innerHTML=`
     <div class="end-wrap">
       <div class="end-kicker">Итоги недели ${wk} · что ты построил</div>
@@ -1184,17 +1291,20 @@ function endSlice(){
       <p>${o.d}</p>
       ${cons}
       ${stand}
-      <div class="stat-row">💰 ${Math.round(state.m.cap)} · ⭐ ${Math.round(state.m.rep)} · ❤️ ${Math.round(state.m.mor)} · 🔮 ${Math.round(state.m.soul)}</div>
+      ${metricRevealBlock()}
+      ${warnBlock}
+      ${traj}
       <div class="end-score">Скор: <b>${score()}</b> / 400</div>
-      <p class="end-note">${note}</p>
-      <button class="btn" style="min-width:240px;margin-bottom:10px;" onclick="shareWeek()">↗ Поделиться итогом</button>
+      <button class="btn" style="min-width:240px;margin:6px 0 10px;" onclick="shareWeek()">↗ Поделиться итогом</button>
       <button class="btn" style="min-width:240px;margin-bottom:10px;" onclick="Ads.rewarded(replayChapter)">🔄 Переиграть неделю (реклама)</button>
-      ${mainBtn}
+      ${nextArea}
     </div>`;
   if(more) save(); else localStorage.removeItem(SAVE_KEY);
   show('screen-end');
+  if(more && chapterLocked(wk+1)) startLockCountdown(wk+1);
 }
 function nextChapter(){
+  state.awaitingNext=false;
   state.weekNum=(state.weekNum||1)+1;
   Ads.interstitial();                 // мягкий интерстишел на стыке глав
   const ch=CHAPTERS[state.weekNum];
@@ -1358,7 +1468,9 @@ $('intro-cta').onclick=startGame;
 $('restart').onclick=hardReset;
 $('btn-dossier').onclick=openDossier;
 $('dossier-back').onclick=()=>show('screen-title');
-$('btn-continue').onclick=()=>{state=load()||fresh();renderMetrics();renderEvent();show('screen-game');};
+$('btn-continue').onclick=()=>{ state=load()||fresh(); renderMetrics();
+  if(state.awaitingNext){ endSlice(); }               // вернулся, пока ждём открытия след. главы — снова экран итогов (замок пересчитается)
+  else { renderEvent(); show('screen-game'); } };
 
 /* continue button if save exists */
 if(load()){$('btn-continue').style.display='block';}
