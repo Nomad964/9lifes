@@ -712,7 +712,10 @@ function buildStoryImage(){
   x.fillStyle='#D9B978'; x.font='700 84px "Playfair Display",Georgia,serif'; x.fillText('9 ЖИЗНЕЙ', W/2, 320);
   x.fillStyle='#b7bccb'; x.font='600 30px Manrope,Arial,sans-serif'; x.fillText('СИМУЛЯТОР УПРАВЛЕНИЯ КОМПАНИЕЙ', W/2, 384);
   x.fillStyle='#F3ECDD'; x.font='700 78px "Playfair Display",Georgia,serif';
-  (function(){ const words=String(title).split(' '); let line='',lines=[]; words.forEach(w=>{ const t=line?line+' '+w:w; if(x.measureText(t).width>900){ lines.push(line); line=w; } else line=t; }); if(line)lines.push(line); const sy=560-(lines.length-1)*44; lines.forEach((l,i)=>x.fillText(l,W/2,sy+i*88)); })();
+  // В canvas VK-вебвью часть эмодзи (🌫️/⚔️/🏙️ с variation selector) не имеет глифа → белый квадрат + сбитое центрирование.
+  // Эмодзи концовки живёт в игре (HTML), а в картинке-истории оставляем чистый текст (эмодзи метрик ниже рисуются нормально).
+  const ttl=String(title).replace(/^(?:\p{Extended_Pictographic}️?‍?\s*)+/u,'').trim();
+  (function(){ const words=ttl.split(' '); let line='',lines=[]; words.forEach(w=>{ const t=line?line+' '+w:w; if(x.measureText(t).width>900){ lines.push(line); line=w; } else line=t; }); if(line)lines.push(line); const sy=560-(lines.length-1)*44; lines.forEach((l,i)=>x.fillText(l,W/2,sy+i*88)); })();
   x.fillStyle='#9aa0b3'; x.font='700 34px Manrope,Arial,sans-serif'; x.fillText('С К О Р', W/2, 780);
   x.fillStyle='#D9B978'; x.font='800 150px Manrope,Arial,sans-serif'; x.fillText(sc+' / 400', W/2, 920);
   const rows=[['💰 Капитал',Math.round(m.cap)],['⭐ Репутация',Math.round(m.rep)],['❤️ Мораль',Math.round(m.mor)],['🔮 Душа',Math.round(m.soul)]];
@@ -1175,7 +1178,7 @@ function simpleResult(name,tier,fx,msg,extra){
   state.flags.puzzleLine=name+' — '+tier+': '+msg;
   const icon=tier==='Блестяще'?'🏆':tier==='Норма'?'👍':'⚠️';
   $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Результат — ${tier}</div>
-    <h2>${icon} ${name}</h2><p>${msg}</p>${extra?`<div class="anom-reveal">${extra}</div>`:''}
+    <h2><span class="emo">${icon}</span>${name.replace(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})️?\s*/u,'<span class="emo">$&</span>')}</h2><p>${msg}</p>${extra?`<div class="anom-reveal">${extra}</div>`:''}
     <div class="stat-row">${Object.keys(fx).map(k=>`${METRIC_NAMES[k]} ${fx[k]>0?'+':''}${fx[k]}`).join(' · ')}</div>
     <button class="btn btn-primary" style="min-width:230px;" onclick="endSlice()">Дальше → итоги недели</button></div>`;
 }
@@ -1183,26 +1186,45 @@ function simpleResult(name,tier,fx,msg,extra){
 /* ===== ФИНАЛ · 6 концовок + эпилоги ===== */
 function lostCount(){ let n=0; for(const r in state.rel){ if(state.rel[r]<=-3) n++; } const f=state.flags; ['grishaBroken','marselCrushed','coldFarewell','coldToCleo','banRomance','banTS'].forEach(k=>{ if(f[k]) n++; }); return n; }
 function loyalCount(){ let n=0; for(const r in state.rel){ if(state.rel[r]>=3) n++; } return n; }
+// Кто примет «Девять», если ты уходишь: самый преданный из топов, иначе — варяг со стороны.
+function successorName(){
+  const r=state.rel, order=['vasilisa','felix','marsel','tisha','murka','sonya'];
+  let best=null,bv=1; order.forEach(id=>{ const v=r[id]||0; if(v>bv){ bv=v; best=id; } });
+  return best?NAME[best]:'человек со стороны, которого впопыхах поставил совет';
+}
 function computeEnding(){
   const m=state.m, f=state.flags, loyal=loyalCount(), lost=lostCount();
   const felixPath=f.gaveFelix||f.sideFelix||f.felixPlan||f.poaching;
   if(m.cap<=0||m.rep<=0||m.mor<=0||m.soul<=0||m.cap<25)
     return {key:'crash', t:'💥 Крах', art:'ch8_01_crisis.jpg', video:'vid_lose_cap.mp4',
-      d:'«Девять» не выдержала. Метрики просели в ноль, компания разваливается на глазах, а ты остаёшься на пепелище того, что построил Барон. Иногда амбиции стоят всего.'};
+      d:'«Девять» не выдержала. Метрики просели в ноль, кабинет опечатывают, команда разбегается по чужим компаниям — кресло не наследует никто. От дела, которое Барон строил всю жизнь, остаётся пепел. Он не кричит на тебя. Ему просто больно.'};
   if(felixPath && m.mor<45)
     return {key:'revolution', t:'🔥 Революция', art:'ch6_01_felix.jpg', video:'vid_ch6_felix.mp4',
-      d:'Ты вырастил Феликса — и он вырос через твою голову. При низком боевом духе молодые пошли за ним, а не за тобой. Совет выбирает его. Ты уходишь, аплодируя чужой победе.'};
+      d:'Ты вырастил Феликса — и он вырос через твою голову. При низком боевом духе команда пошла за ним, а не за тобой: совет отдаёт «Девять» Феликсу, и ты уходишь под чужие аплодисменты. Барон вздыхает — силу в нём ты разглядел верно, а вот удержать штурвал не смог.'};
   if(m.soul>=75 && m.mor>=70 && m.cap>=60 && loyal>=5)
     return {key:'home', t:'🏆 Тёплый дом', art:'ch10_04_ending.jpg', video:'vid_win_home.mp4', video2:'vid_ch10_ending.mp4',
-      d:'Ты сделал невозможное: компания-семья, где людей ценят как людей — и при этом крепкий, устойчивый успех. Команда пойдёт за тобой в огонь. Барон смотрит с гордостью: ты превзошёл его.'};
+      d:'Ты сделал невозможное: компания-семья, где людей ценят как людей — и при этом крепкий, устойчивый успех. Штурвал остаётся у тебя, и команда пойдёт за тобой в огонь. Барон уходит на покой счастливым: он не ошибся в наследнике — ты превзошёл его.'};
   if(m.cap>=80 && m.rep>=70 && m.soul<50)
     return {key:'empire', t:'🏙️ Империя', art:'ch10_05_ending_cold.jpg', video:'vid_ch10_ending.mp4',
-      d:'Ты построил гиганта. Капитал и репутация на вершине — но душу компании ты продал по дороге. Стоишь один над сияющим городом-империей. Успех оглушительный. И оглушительно одинокий.'};
+      d:'Ты построил гиганта. Капитал и репутация на вершине — но душу компании ты продал по дороге. «Девять» твоя, ты один над сияющим городом-империей, и рядом — никого. Барон молча снимает со стены своё фото: не такую компанию он тебе оставлял.'};
   if(m.cap>=60 && (lost>=3 || (f.dirtyDeal&&f.surveillance) || f.dealBagira))
     return {key:'pyrrhic', t:'⚔️ Пиррова победа', art:'ch7_02_bagira.jpg', video:'vid_ch7_bagira.mp4',
-      d:'Ты выиграл — но поле боя усеяно теми, кем ты пожертвовал. Компания жива, счета в плюсе, а рядом почти никого не осталось. Победа, вкус которой — пепел.'};
+      d:'Ты выиграл — но поле боя усеяно теми, кем ты пожертвовал. «Девять» жива и в плюсе, кресло за тобой, а рядом почти никого не осталось. Барон жмёт тебе руку сухо: победа есть, только цена ему не по душе.'};
   return {key:'quiet', t:'🌫️ Тихий уход', art:'ch9_03_fork.jpg', video:'vid_ch9_reckoning.mp4',
-    d:'Ты провёл «Девять» сквозь бури, не сорвавшись ни в одну крайность — но и не зажёгшись. Компания живёт дальше. А ты тихо отдаёшь ключ и уходишь, уставший, как когда-то Барон. Круг замкнулся.'};
+    d:'Ты провёл «Девять» сквозь бури, не сорвавшись ни в одну крайность — но и не загоревшись. Устав, ты отдаёшь ключ и уходишь, как когда-то сам Барон. Штурвал подхватывает '+successorName()+'. Барон качает головой: он-то надеялся, что ты не повторишь его усталый уход — а круг замкнулся.'};
+}
+// Чего не хватило до идеальной концовки «Тёплый дом» (soul≥75, mor≥70, cap≥60, лояльных≥5) — мотивируем переиграть.
+function idealGap(){
+  if(state.flags.endingKey==='home')
+    return '<div class="ideal ideal-win">🏆 Ты достиг лучшей концовки — «Тёплый дом». Выше уже некуда. Сможешь повторить другим путём?</div>';
+  const m=state.m, gaps=[];
+  [['💰 Капитал','cap',60],['❤️ Мораль','mor',70],['🔮 Душа','soul',75]].forEach(([nm,k,th])=>{
+    const v=Math.round(m[k]); if(v<th) gaps.push(`${nm}: ${v} — нужно ${th} <b>(+${th-v})</b>`);
+  });
+  const loyal=loyalCount(); if(loyal<5) gaps.push(`🤝 Преданных героев: ${loyal} — нужно 5 <b>(+${5-loyal})</b>`);
+  if(!gaps.length)
+    return '<div class="ideal"><div class="ideal-h">Ты был в одном шаге от «Тёплого дома».</div><div class="ideal-f">Чуть иначе распорядись финалом — и лучшая концовка твоя.</div></div>';
+  return `<div class="ideal"><div class="ideal-h">До идеальной концовки «Тёплый дом» не хватило:</div>${gaps.map(g=>`<div class="ideal-r">${g}</div>`).join('')}<div class="ideal-f">Переиграй и собери всё разом — человечность и успех вместе.</div></div>`;
 }
 function heroEpilogues(){
   const r=state.rel, f=state.flags, L=[];
@@ -1216,7 +1238,16 @@ function heroEpilogues(){
   ep('murka', f.careProgram?'счастлива: ты построил компанию, где людей берегут — её мечта сбылась.':'тянет всех на себе, тихо надеясь, что однажды спасут и её.','выгорела и ушла — душа коллектива погасла.','остаётся тем, к кому идут за теплом.');
   ep('tisha', f.romanceTS?'нашёл с Соней тихое счастье — гений наконец улыбается.':'построил тебе лучшую платформу в отрасли.','замкнулся и ушёл в стартап, где его слышат.','молчит и держит всю технологию на своих плечах.');
   ep('marsel', f.romanceMV?'снова счастлив с Василисой — второй шанс, который ты подарил.':(f.trustMarsel?'воскрес как звезда продаж — ты в него поверил не зря.':'нашёл своё место, уже без страха оказаться лишним.'),'сломлен — ты добил то, что и так трещало.','доигрывает свою партию с достоинством.');
-  ep('baron','уходит на покой спокойным: он не ошибся, отдав тебе «Девять».','качает головой — не таким он видел наследника.','наблюдает издалека, оставляя тебе твой путь.');
+  // Барон реагирует на ИТОГ, а не только на личные отношения — иначе выходит нестыковка (ты ушёл, а он «спокоен»).
+  const baronLine={
+    home:'уходит на покой счастливым — ты сберёг и дело, и людей. Он не ошибся в наследнике: ты превзошёл его.',
+    empire:'молчит. Он оставлял тебе живую компанию, а не сияющий пустой монумент — и это молчание горше любого упрёка.',
+    revolution:'потерянно смотрит, как «Девять» уходит к Феликсу: он верил, что ты удержишь построенное им.',
+    crash:'постарел на десять лет за одну ночь — дело всей его жизни рассыпалось у тебя в руках.',
+    pyrrhic:'признаёт, что ты победил, но отводит взгляд: такой цены он от своего наследника не ждал.',
+    quiet:'грустно усмехается: он отдал тебе «Девять», чтобы ты не повторил его усталый уход, — а ты повторил.'
+  }[state.flags.endingKey]||'наблюдает издалека, оставляя тебе твой путь.';
+  L.push(`<b>${NAME.baron}:</b> ${baronLine}`);
   return L;
 }
 function startFinale(){
@@ -1238,6 +1269,7 @@ function startFinale(){
       <div class="stand"><b>Что стало с командой:</b></div>
       ${eps}
       <div class="cant">Ты прожил девять судеб. Такова цена кресла.</div>
+      ${idealGap()}
       <button class="btn" style="min-width:240px;margin:14px 0 10px;" onclick="shareWeek()">↗ Поделиться финалом</button>
       <button class="btn btn-primary" style="min-width:240px;" onclick="hardReset()">↺ Прожить заново — другим боссом</button>
     </div>`;
