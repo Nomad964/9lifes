@@ -27,7 +27,8 @@ const Ads = {
     let done=false; const grant=()=>{ if(!done){ done=true; try{ onReward(); }catch(e){} } };
     try{
       if(window.vkBridge && window.vkBridge.send){
-        window.vkBridge.send('VKWebAppShowNativeAds',{ad_format:'reward'}).then(grant).catch(grant);
+        // .then = ролик реально показали → обновляем таймер интерстишела, чтобы 2-я реклама подряд не вылезла
+        window.vkBridge.send('VKWebAppShowNativeAds',{ad_format:'reward'}).then(()=>{ Ads._lastInter=Date.now(); grant(); }).catch(grant);
       } else { grant(); }
     }catch(e){ grant(); }
   }
@@ -1254,7 +1255,7 @@ function startLockCountdown(nextCh){
   lockTimer=setInterval(()=>{ const el=$('lock-c'); if(!el){ clearInterval(lockTimer); return; }
     const r=lockRemain(); if(r<=0){ clearInterval(lockTimer); endSlice(); return; } el.textContent='через '+fmtRemain(r); },30000);
 }
-function openNextNow(){ localStorage.removeItem(LOCK_KEY); state.lockArmedFor=null; clearInterval(lockTimer); nextChapter(); }
+function openNextNow(){ localStorage.removeItem(LOCK_KEY); state.lockArmedFor=null; clearInterval(lockTimer); nextChapter(true); }  /* true = без интерстишела: reward-ролик уже показали */
 
 /* ===== Разбор метрик в итогах ===== */
 function metricRevealBlock(){
@@ -1322,10 +1323,10 @@ function endSlice(){
   show('screen-end');
   if(more && chapterLocked(wk+1)) startLockCountdown(wk+1);
 }
-function nextChapter(){
+function nextChapter(skipInter){
   state.awaitingNext=false;
   state.weekNum=(state.weekNum||1)+1;
-  Ads.interstitial();                 // мягкий интерстишел на стыке глав
+  if(!skipInter) Ads.interstitial();  // мягкий интерстишел на стыке глав; НЕ показываем, если главу открыли за reward-рекламу (не 2 подряд)
   const ch=CHAPTERS[state.weekNum];
   state.cur = ch ? ch.start : 'intro';
   snapshot();
