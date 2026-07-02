@@ -491,9 +491,10 @@ function show(id){
   // уходя с игрового экрана — глушим и останавливаем видео сцены
   if(id!=='screen-game'){ try{const v=$('scene-vid'); v.pause(); v.muted=true; v.removeAttribute('src'); v.load&&v.load();}catch(e){} }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  $(id).classList.add('active');
-  // страницу скроллит body — просто прокручиваем в начало нового экрана
-  try{ window.scrollTo(0,0); }catch(e){}
+  const t=$(id); t.classList.add('active');
+  // iOS иногда не сразу видит новую высоту прокрутки при подмене экрана → форсим пересчёт layout
+  try{ window.scrollTo(0,0); void document.body.offsetHeight; }catch(e){}
+  requestAnimationFrame(()=>{ try{ void t.offsetHeight; window.scrollTo(0,0); }catch(e){} });
 }
 
 /* Зоны метрик: во время главы показываем СЛОВО, а не точное число (интрига + меньше мин-макса) */

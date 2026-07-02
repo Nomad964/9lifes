@@ -50,8 +50,8 @@
 
   /* ===== Screens — только активный в потоке; страницу скроллит BODY ===== */
   .screen{display:none;}
-  .screen.active{display:flex; flex-direction:column; min-height:100dvh; animation:scrfade .45s ease;}
-  @keyframes scrfade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+  .screen.active{display:flex; flex-direction:column; min-height:100dvh; animation:scrfade .4s ease;}
+  @keyframes scrfade{from{opacity:0;} to{opacity:1;}}   /* только прозрачность — без transform, иначе iOS тормозит пересчёт высоты скролла */
   /* iOS: вертикальный свайп скроллит откуда угодно (медиа не перехватывают жест) */
   #scene, #scene-vid, #scene-img, #scene .placeholder{touch-action:pan-y;}
 
