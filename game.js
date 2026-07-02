@@ -323,7 +323,7 @@ const EVENTS = {
       {label:'Клятва: победа любой ценой.',sub:'Путь силы (закрывает «Тёплый дом»)',fx:{cap:+10,rep:+5,soul:-9},set:{vowPower:true},next:'ch5_week'},
       {label:'Не зарекаться — плыть по ситуации.',sub:'Канатоходец',fx:{rep:+2},set:{vowNone:true},next:'ch5_week'} ] },
 
-  ch5_week:{ loc:'КАБИНЕТ · СЕЙФ', emoji:'🔐', tag:'Сейф', img:'ch5_05_safe.jpg',
+  ch5_week:{ loc:'КАБИНЕТ · СЕЙФ', emoji:'🔒', tag:'Сейф', img:'ch5_05_safe.jpg',
     title:'Шифр сейфа',
     text:'Условия сделки заперты в сейфе Барона — он оставил тебе только подсказки к коду. Вскрой его прежде, чем истечёт срок предложения.',
     choices:[{label:'Подобрать код →',sub:'Дедукция под таймер',puzzle:'safe'}] },
@@ -1086,7 +1086,7 @@ function renderSafe(){
   const rev=s.revealed!=null?`<div class="safe-clue">💡 Позиция ${s.revealed+1} — цифра <b>${s.code[s.revealed]}</b></div>`:'';
   $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Задача недели · шифр сейфа</div>
     <div class="pz-timer ${s.timeLeft<=8?'low':''}" id="pz-timer">${s.timeLeft} с</div>
-    <h2>🔐 Шифр сейфа</h2><p>Код — 3 разные цифры (1–6). 🟢 цифра на месте · 🟡 есть, но не там · ⚫ нет. Попыток: <b>${s.history.length}/${s.max}</b>.</p>
+    <h2>🔒 Шифр сейфа</h2><p>Код — 3 разные цифры (1–6). 🟢 цифра на месте · 🟡 есть, но не там · ⚫ нет. Попыток: <b>${s.history.length}/${s.max}</b>.</p>
     <div class="safe-slots">${slots}</div>${rev}
     <button class="btn btn-primary" style="min-width:230px;margin:6px 0 8px;" onclick="safeSubmit()">Проверить код →</button>
     <button class="btn" style="min-width:230px;margin-bottom:8px;" onclick="safeHint()">💡 Открыть цифру (реклама)</button>
@@ -1096,11 +1096,11 @@ function renderSafe(){
 function safeResult(win,timeout){
   const s=state.safe; clearInterval(pzTimer); s.done=true;
   let tier,fx,msg;
-  if(s.cracked){ tier='Взлом'; fx={}; msg='Взломщик вскрыл сейф за тебя — сделку успел закрыть, но без бонуса. Идём дальше.'; simpleResult('🔐 Шифр сейфа',tier,fx,msg,'Код был: <b>'+state.safe.code.join(' ')+'</b>'); return; }
+  if(s.cracked){ tier='Взлом'; fx={}; msg='Взломщик вскрыл сейф за тебя — сделку успел закрыть, но без бонуса. Идём дальше.'; simpleResult('🔒 Шифр сейфа',tier,fx,msg,'Код был: <b>'+state.safe.code.join(' ')+'</b>'); return; }
   if(win && s.history.length<=3){ tier='Блестяще'; fx={cap:8,rep:4}; msg='Сейф вскрыт с ходу — условия сделки у тебя раньше срока.'; }
   else if(win){ tier='Норма'; fx={cap:4,rep:1}; msg='Сейф поддался под конец — сделку успел закрыть впритык.'; }
   else { tier='Провал'; fx={cap:-5}; msg=timeout?'Время вышло — сейф заперт, предложение сгорело.':'Код не поддался — часть условий утекла к инвестору.'; state.flags.safeFail=true; }
-  simpleResult('🔐 Шифр сейфа',tier,fx,msg,'Код был: <b>'+state.safe.code.join(' ')+'</b>');
+  simpleResult('🔒 Шифр сейфа',tier,fx,msg,'Код был: <b>'+state.safe.code.join(' ')+'</b>');
 }
 
 /* ===== Головоломка «Лабиринт интриги» (гл.6) — вычисли зачинщика ===== */
@@ -1299,8 +1299,8 @@ function puzzleFailChapter(){
   $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Провал · Глава ${state.weekNum||1}</div>
     <h2>⚠️ Задача не решена</h2>
     <p>Ты не справился с задачей недели — без неё главу не закрыть. Придётся переиграть её с начала.</p>
-    <button class="btn btn-primary" style="min-width:230px;margin-bottom:10px;" onclick="replayChapter()">🔄 Переиграть главу</button>
-    <button class="btn" style="min-width:230px;" onclick="hardReset()">↺ Начать заново</button></div>`;
+    <button class="btn btn-primary btn-wide" style="margin-bottom:10px;" onclick="replayChapter()">🔄 Переиграть главу</button>
+    <button class="btn btn-wide" onclick="hardReset()">↺ Начать заново</button></div>`;
   show('screen-puzzle');
 }
 function puzzleFailed(tier){ return tier==='Провал' && (state.weekNum||1)>=3; }
@@ -1314,7 +1314,7 @@ function simpleResult(name,tier,fx,msg,extra){
   $('screen-puzzle').innerHTML=`<div class="pz-wrap"><div class="end-kicker">Результат — ${tier}</div>
     <h2><span class="emo">${icon}</span>${name.replace(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})️?\s*/u,'<span class="emo">$&</span>')}</h2><p>${msg}</p>${extra?`<div class="anom-reveal">${extra}</div>`:''}
     <div class="stat-row">${Object.keys(fx).map(k=>`${METRIC_NAMES[k]} ${fx[k]>0?'+':''}${fx[k]}`).join(' · ')}</div>
-    <button class="btn btn-primary" style="min-width:230px;" onclick="endSlice()">Дальше → итоги недели</button></div>`;
+    <button class="btn btn-primary btn-wide" onclick="endSlice()">Дальше → итоги недели</button></div>`;
 }
 
 /* ===== ФИНАЛ · 6 концовок + эпилоги ===== */

@@ -214,7 +214,9 @@
   /* ===== PUZZLE ===== */
   #screen-puzzle{align-items:center; text-align:center; padding:calc(var(--vktop) + 6px) 18px calc(86px + env(safe-area-inset-bottom));}
   .pz-wrap{position:relative; z-index:1; width:100%; max-width:360px; text-align:center;}
-  .emo{display:inline-block; margin:0 .16em; vertical-align:middle;}
+  .emo{display:inline-block; margin:0 .18em; vertical-align:middle;}
+  /* Кнопки результата/провала — во всю ширину колонки, без «плавающих» боковых зазоров */
+  .pz-wrap .btn-wide{display:block; width:100%; max-width:300px; margin-left:auto; margin-right:auto;}
   #screen-puzzle h2{font-family:'Playfair Display',serif; font-weight:900; color:var(--gold); font-size:26px; margin-bottom:10px;}
   #screen-puzzle p{font-size:14px; line-height:1.55; color:#e7e2d6; margin-bottom:12px;}
   .pz-budget{font-family:'Oswald'; letter-spacing:1px; color:#e8688a; font-size:16px; margin:6px 0 14px;}
