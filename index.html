@@ -83,6 +83,9 @@
   @keyframes sheen{0%{left:-60%;}55%{left:130%;}100%{left:130%;}}
   .btn-primary{animation:cta 2.6s ease-in-out infinite;}
   @keyframes cta{0%,100%{box-shadow:0 0 16px rgba(212,162,74,.3), inset 0 0 12px rgba(212,162,74,.12);}50%{box-shadow:0 0 30px rgba(212,162,74,.6), inset 0 0 18px rgba(212,162,74,.22);}}
+  /* яркая «Продолжить» — сильнее свечение + чуть крупнее шрифт */
+  .btn-glow{font-size:16px; border-color:var(--gold)!important; animation:ctaGlow 1.8s ease-in-out infinite;}
+  @keyframes ctaGlow{0%,100%{box-shadow:0 0 22px rgba(212,162,74,.5), inset 0 0 16px rgba(212,162,74,.2);}50%{box-shadow:0 0 40px rgba(212,162,74,.85), inset 0 0 24px rgba(212,162,74,.32);}}
 
   /* ===== INTRO cinematic ===== */
   #screen-intro{justify-content:center; align-items:center; text-align:center; padding:calc(var(--vktop) + 10px) 30px 40px;}
@@ -303,9 +306,9 @@
     <div class="title-big">9 ЖИЗНЕЙ</div>
     <div class="title-sub">Котополис · 2026</div>
     <div class="tagline">Тебе отдают целую компанию. И девять судеб, которые теперь зависят только от твоих решений.</div>
+    <button class="btn btn-primary btn-glow" id="btn-continue" style="min-width:250px; display:none; margin-bottom:12px;">▸ Продолжить</button>
     <button class="btn btn-primary" id="btn-start" style="min-width:230px;">Принять «Девять» →</button>
-    <button class="ctrl" id="btn-continue" style="margin-top:16px; display:none;">▸ продолжить сохранение</button>
-    <button class="ctrl" id="btn-dossier" style="margin-top:10px;">👥 Досье команды</button>
+    <button class="ctrl" id="btn-dossier" style="margin-top:12px;">👥 Досье команды</button>
     <a class="ctrl" id="btn-support" href="https://vk.me/club231698113" target="_blank" rel="noopener" style="margin-top:10px; text-decoration:none; display:block;">🐾 Что-то не работает? Напишите — мы рядом</a>
   </section>
 
