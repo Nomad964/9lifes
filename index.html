@@ -55,7 +55,15 @@
   .glass{background:var(--glass); border:1px solid var(--glass-bd); backdrop-filter:blur(14px) saturate(130%); -webkit-backdrop-filter:blur(14px) saturate(130%); box-shadow:0 8px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);}
 
   /* ===== Screens ===== */
-  .screen{position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; opacity:0; transform:translateY(8px); pointer-events:none; transition:opacity .55s ease, transform .55s ease; overflow-y:auto; overscroll-behavior:contain;}
+  .screen{position:absolute; inset:0; z-index:2; display:flex; flex-direction:column; opacity:0; transform:translateY(8px); pointer-events:none; transition:opacity .55s ease, transform .55s ease; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y;}
+  /* iOS: чтобы вертикальный свайп СКРОЛЛИЛ откуда угодно, а не «залипал» над видео/фото в центре */
+  #scene, #scene-vid, #scene-img, #scene .placeholder, #metrics, #story{touch-action:pan-y;}
+  /* одноразовая подсказка «листай» */
+  #scrollhint{position:fixed; left:50%; bottom:calc(96px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:60; pointer-events:none;
+    background:rgba(9,10,16,.88); border:1px solid var(--gold); color:var(--gold-soft); font-family:'Manrope',sans-serif; font-size:13.5px; font-weight:600;
+    padding:9px 16px; border-radius:22px; box-shadow:0 6px 24px rgba(0,0,0,.5); backdrop-filter:blur(4px); transition:opacity .4s; animation:hintbob 1.4s ease-in-out infinite;}
+  #scrollhint.hide{opacity:0;}
+  @keyframes hintbob{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(-6px);}}
   .screen:not(.active){overflow:hidden;}
   .screen.active{opacity:1; transform:none; pointer-events:auto;}
 

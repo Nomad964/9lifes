@@ -1314,7 +1314,16 @@ function nextChapter(){
 }
 
 function flashSaved(){const s=$('saved');s.style.opacity=1;setTimeout(()=>s.style.opacity=0,800);}
-function startGame(){state=fresh();try{state.streak=Streak.check();}catch(e){}snapshot();renderMetrics();renderEvent();show('screen-game');save();}
+/* Одноразовая подсказка «листай экран» (первый заход в игру) */
+function showScrollHint(){
+  try{ if(localStorage.getItem('devyat9_hint')) return; localStorage.setItem('devyat9_hint','1'); }catch(e){ return; }
+  const h=document.createElement('div'); h.id='scrollhint'; h.textContent='👆 Листай экран вверх-вниз';
+  document.body.appendChild(h);
+  const kill=()=>{ if(!h.parentNode) return; h.classList.add('hide'); setTimeout(()=>{ if(h.parentNode) h.remove(); },400); document.removeEventListener('touchmove',kill); };
+  setTimeout(kill, 5500);
+  document.addEventListener('touchmove', kill, {passive:true});
+}
+function startGame(){state=fresh();try{state.streak=Streak.check();}catch(e){}snapshot();renderMetrics();renderEvent();show('screen-game');save();setTimeout(showScrollHint,900);}
 function hardReset(){startGame();}
 function snapshot(){ try{ state._snap=JSON.stringify({m:state.m,flags:state.flags,rel:state.rel,weekNum:state.weekNum,cur:state.cur}); }catch(e){} }
 function replayChapter(){
