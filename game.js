@@ -485,7 +485,7 @@ const $=id=>document.getElementById(id);
 const clamp=v=>Math.max(0,Math.min(100,v));
 function fresh(){return{cur:'company',m:{...START},flags:{},rel:{},weekNum:1,awaitingNext:false,lockArmedFor:null};}
 function load(){try{return JSON.parse(localStorage.getItem(SAVE_KEY));}catch(e){return null;}}
-function save(){if(state)localStorage.setItem(SAVE_KEY,JSON.stringify(state));flashSaved();}
+function save(){ if(state)localStorage.setItem(SAVE_KEY,JSON.stringify(state)); cloudSave(); flashSaved(); }
 
 function show(id){
   // уходя с игрового экрана — глушим и останавливаем видео сцены
@@ -1458,7 +1458,49 @@ document.addEventListener('click',e=>{
    виден). Это надёжно на iOS, поэтому все прежние костыли (зажим #app, буфер границы, репейнт при
    возврате, одноразовая подсказка) удалены за ненадобностью. */
 
-$('btn-start').onclick=playIntro;
+/* ===== ОБЛАЧНЫЕ СЕЙВЫ (VK Bridge Storage) =====
+   localStorage в iframe ВК на iOS может стираться → дублируем сейв/замок/стрик в облако ВК.
+   Без этого после захода на след. день прогресс и открытая глава могли пропасть. */
+const CLOUD_KEYS=['devyat9_slice_save','devyat9_unlock','devyat9_streak'];
+let cloudReady=false, _cloudT=null;
+function cloudInit(cb){
+  if(!(window.vkBridge && window.vkBridge.send)){ cloudReady=true; return cb&&cb(); }   // вне ВК — localStorage
+  try{
+    window.vkBridge.send('VKWebAppStorageGet',{keys:CLOUD_KEYS}).then(r=>{
+      try{ (r.keys||[]).forEach(kv=>{
+        if(kv && kv.value && kv.value.length){
+          if(kv.key==='devyat9_slice_save' && localStorage.getItem('devyat9_slice_save')) return; // не затираем свежую локальную сессию
+          try{ localStorage.setItem(kv.key, kv.value); }catch(e){}
+        }
+      }); }catch(e){}
+      cloudReady=true; cb&&cb();
+    }).catch(()=>{ cloudReady=true; cb&&cb(); });
+  }catch(e){ cloudReady=true; cb&&cb(); }
+}
+function cloudSave(){                                   // дебаунс, чтобы не спамить VK Storage на каждый выбор
+  if(!cloudReady || !(window.vkBridge && window.vkBridge.send)) return;
+  clearTimeout(_cloudT);
+  _cloudT=setTimeout(()=>{ CLOUD_KEYS.forEach(k=>{ const v=localStorage.getItem(k); if(v!=null){ try{ window.vkBridge.send('VKWebAppStorageSet',{key:k, value:String(v)}).catch(()=>{}); }catch(e){} } }); }, 700);
+}
+
+/* Умная кнопка «Продолжить»: сама сообщает, готова ли новая глава */
+function refreshContinue(){
+  const s=load(), cont=$('btn-continue'), start=$('btn-start');
+  if(s){
+    let label;
+    if(s.awaitingNext){
+      const nx=(s.weekNum||1)+1;
+      label = chapterLocked(nx) ? ('▸ Продолжить · Глава '+nx+' через '+fmtRemain(lockRemain())) : ('✦ Глава '+nx+' открыта — играть!');
+    } else { label='▸ Продолжить · Глава '+(s.weekNum||1); }
+    cont.textContent=label; cont.className='btn btn-primary btn-glow'; cont.style.cssText='min-width:250px; display:block; margin-bottom:12px;';
+    start.textContent='Новая игра'; start.className='ctrl'; start.style.cssText='margin-top:2px;';
+  } else {
+    cont.style.display='none';
+    start.textContent='Принять «Девять» →'; start.className='btn btn-primary'; start.style.minWidth='230px';
+  }
+}
+
+$('btn-start').onclick=()=>{ if(load() && !confirm('Начать заново? Текущий прогресс сбросится.')) return; playIntro(); };
 $('intro-cta').onclick=startGame;
 $('restart').onclick=hardReset;
 $('btn-dossier').onclick=openDossier;
@@ -1467,8 +1509,6 @@ $('btn-continue').onclick=()=>{ state=load()||fresh(); renderMetrics();
   if(state.awaitingNext){ endSlice(); }               // вернулся, пока ждём открытия след. главы — снова экран итогов (замок пересчитается)
   else { renderEvent(); show('screen-game'); } };
 
-/* continue button if save exists */
-if(load()){$('btn-continue').style.display='block';}
-
-/* VK Bridge init — внутри ВК активирует мост и рекламу; вне ВК тихо игнорится */
+/* VK Bridge init + чтение облака ПЕРЕД показом кнопки «Продолжить» */
 try{ if(window.vkBridge) window.vkBridge.send('VKWebAppInit'); }catch(e){}
+cloudInit(refreshContinue);
